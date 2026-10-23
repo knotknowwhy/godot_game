@@ -1,4 +1,4 @@
-[gd_scene load_steps=5 format=3 uid="uid://dlgmtcau57j4d"]
+[gd_scene format=3 uid="uid://dlgmtcau57j4d"]
 
 [ext_resource type="Texture2D" uid="uid://ccasvi4yglngy" path="res://assets/sprites/mainlevbuild.png" id="1_uwrxv"]
 [ext_resource type="PackedScene" uid="uid://casgcs7q8ujxx" path="res://scenes/player.tscn" id="2_yqjtg"]
@@ -999,18 +999,22 @@ texture = ExtResource("1_uwrxv")
 [sub_resource type="TileSet" id="TileSet_lnu2h"]
 sources/0 = SubResource("TileSetAtlasSource_yqjtg")
 
-[node name="game" type="Node2D"]
+[node name="game" type="Node2D" unique_id=1827844445]
 
-[node name="world" type="Node" parent="."]
+[node name="world before player render" type="Node" parent="." unique_id=1023386170]
 
-[node name="TileMapLayer" type="TileMapLayer" parent="world"]
+[node name="TileMapLayer" type="TileMapLayer" parent="world before player render" unique_id=1432823309]
 tile_set = SubResource("TileSet_lnu2h")
 
-[node name="player" type="Node" parent="."]
+[node name="enviroment" type="Node" parent="." unique_id=263057435]
 
-[node name="CharacterBody2D" parent="player" instance=ExtResource("2_yqjtg")]
+[node name="player" type="Node" parent="." unique_id=218413921]
 
-[node name="entities" type="Node" parent="."]
+[node name="CharacterBody2D" parent="player" unique_id=1936030896 instance=ExtResource("2_yqjtg")]
 
-[node name="Camera2D" type="Camera2D" parent="."]
+[node name="Camera2D" type="Camera2D" parent="player/CharacterBody2D" unique_id=1386908097]
 zoom = Vector2(4.98, 4.98)
+
+[node name="world after player render" type="Node" parent="." unique_id=1677691401]
+
+[node name="entities" type="Node" parent="." unique_id=277488409]
