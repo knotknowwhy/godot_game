@@ -1,0 +1,45 @@
+[gd_scene format=3 uid="uid://2faqlx0cbjxa"]
+
+[ext_resource type="Texture2D" uid="uid://vwwju1ywedoj" path="res://assets/sprites/candle_B.png" id="1_vonx2"]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_otwf8"]
+atlas = ExtResource("1_vonx2")
+region = Rect2(0, 0, 13, 16)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_23vpx"]
+atlas = ExtResource("1_vonx2")
+region = Rect2(13, 0, 13, 16)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_g33b1"]
+atlas = ExtResource("1_vonx2")
+region = Rect2(26, 0, 13, 16)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_603fl"]
+atlas = ExtResource("1_vonx2")
+region = Rect2(39, 0, 13, 16)
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_qb2ec"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_otwf8")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_23vpx")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_g33b1")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_603fl")
+}],
+"loop": 1,
+"name": &"default",
+"speed": 9.0
+}]
+
+[node name="candle_B" type="Node2D" unique_id=129650968]
+
+[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="." unique_id=949694038]
+sprite_frames = SubResource("SpriteFrames_qb2ec")
+frame_progress = 0.14159015

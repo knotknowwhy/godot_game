@@ -1,4 +1,4 @@
-[gd_scene load_steps=100 format=3 uid="uid://casgcs7q8ujxx"]
+[gd_scene format=3 uid="uid://casgcs7q8ujxx"]
 
 [ext_resource type="Texture2D" uid="uid://blxmx43ltslg4" path="res://assets/sprites/player_sheet.png" id="1_3vyb7"]
 [ext_resource type="Script" uid="uid://dxwpcmmldsgvg" path="res://scripts/player.gd" id="1_g2els"]
@@ -392,7 +392,7 @@ animations = [{
 "duration": 1.0,
 "texture": SubResource("AtlasTexture_jej6c")
 }],
-"loop": true,
+"loop": 0,
 "name": &"attack_down",
 "speed": 8.0
 }, {
@@ -415,7 +415,7 @@ animations = [{
 "duration": 1.0,
 "texture": SubResource("AtlasTexture_4r5pv")
 }],
-"loop": true,
+"loop": 0,
 "name": &"attack_left",
 "speed": 8.0
 }, {
@@ -438,7 +438,7 @@ animations = [{
 "duration": 1.0,
 "texture": SubResource("AtlasTexture_ke2ow")
 }],
-"loop": true,
+"loop": 0,
 "name": &"attack_right",
 "speed": 8.0
 }, {
@@ -461,7 +461,7 @@ animations = [{
 "duration": 1.0,
 "texture": SubResource("AtlasTexture_fjrip")
 }],
-"loop": true,
+"loop": 0,
 "name": &"attack_up",
 "speed": 8.0
 }, {
@@ -481,7 +481,7 @@ animations = [{
 "duration": 1.0,
 "texture": SubResource("AtlasTexture_bj30b")
 }],
-"loop": true,
+"loop": 0,
 "name": &"block_down",
 "speed": 8.0
 }, {
@@ -501,7 +501,7 @@ animations = [{
 "duration": 1.0,
 "texture": SubResource("AtlasTexture_cs1tg")
 }],
-"loop": true,
+"loop": 0,
 "name": &"block_left",
 "speed": 8.0
 }, {
@@ -521,7 +521,7 @@ animations = [{
 "duration": 1.0,
 "texture": SubResource("AtlasTexture_g5jhy")
 }],
-"loop": true,
+"loop": 0,
 "name": &"block_right",
 "speed": 8.0
 }, {
@@ -541,7 +541,7 @@ animations = [{
 "duration": 1.0,
 "texture": SubResource("AtlasTexture_wqfne")
 }],
-"loop": true,
+"loop": 0,
 "name": &"block_up",
 "speed": 8.0
 }, {
@@ -564,7 +564,7 @@ animations = [{
 "duration": 1.0,
 "texture": SubResource("AtlasTexture_8svfe")
 }],
-"loop": true,
+"loop": 1,
 "name": &"idle_down",
 "speed": 8.0
 }, {
@@ -587,7 +587,7 @@ animations = [{
 "duration": 1.0,
 "texture": SubResource("AtlasTexture_ua5cf")
 }],
-"loop": true,
+"loop": 1,
 "name": &"idle_left",
 "speed": 8.0
 }, {
@@ -610,7 +610,7 @@ animations = [{
 "duration": 1.0,
 "texture": SubResource("AtlasTexture_770dr")
 }],
-"loop": true,
+"loop": 1,
 "name": &"idle_right",
 "speed": 8.0
 }, {
@@ -633,7 +633,7 @@ animations = [{
 "duration": 1.0,
 "texture": SubResource("AtlasTexture_2gdjj")
 }],
-"loop": true,
+"loop": 1,
 "name": &"idle_up",
 "speed": 8.0
 }, {
@@ -656,7 +656,7 @@ animations = [{
 "duration": 1.0,
 "texture": SubResource("AtlasTexture_p21yu")
 }],
-"loop": true,
+"loop": 1,
 "name": &"walk_down",
 "speed": 8.0
 }, {
@@ -679,7 +679,7 @@ animations = [{
 "duration": 1.0,
 "texture": SubResource("AtlasTexture_ry8ed")
 }],
-"loop": true,
+"loop": 1,
 "name": &"walk_left",
 "speed": 8.0
 }, {
@@ -702,7 +702,7 @@ animations = [{
 "duration": 1.0,
 "texture": SubResource("AtlasTexture_fr8ja")
 }],
-"loop": true,
+"loop": 1,
 "name": &"walk_right",
 "speed": 8.0
 }, {
@@ -725,7 +725,7 @@ animations = [{
 "duration": 1.0,
 "texture": SubResource("AtlasTexture_mwp2n")
 }],
-"loop": true,
+"loop": 1,
 "name": &"walk_up",
 "speed": 8.0
 }]
@@ -733,46 +733,61 @@ animations = [{
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_fcu33"]
 size = Vector2(3, 14)
 
-[sub_resource type="RectangleShape2D" id="RectangleShape2D_qmsq4"]
-size = Vector2(8, 4)
+[sub_resource type="CapsuleShape2D" id="CapsuleShape2D_g2els"]
+radius = 11.0
+height = 38.0
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_g2els"]
-size = Vector2(9, 13)
+size = Vector2(12, 17)
 
-[sub_resource type="CapsuleShape2D" id="CapsuleShape2D_g2els"]
-radius = 19.0
-height = 40.0
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_qhqgy"]
+size = Vector2(8, 4)
 
-[node name="CharacterBody2D" type="CharacterBody2D"]
+[node name="CharacterBody2D" type="CharacterBody2D" unique_id=334274701]
+collision_layer = 2
+collision_mask = 192
 script = ExtResource("1_g2els")
 
-[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="."]
+[node name="player_animation" type="AnimatedSprite2D" parent="." unique_id=1951950856]
 sprite_frames = SubResource("SpriteFrames_gvmy4")
-animation = &"attack_down"
+animation = &"block_right"
 autoplay = "idle_down"
-frame = 1
 
-[node name="hit_area" type="Area2D" parent="."]
+[node name="hit_area" type="Area2D" parent="." unique_id=799909374]
+collision_mask = 2147484416
 
-[node name="player_hitbox_to_enemy" type="CollisionShape2D" parent="hit_area"]
+[node name="player_hitbox_to_enemy" type="CollisionShape2D" parent="hit_area" unique_id=621852973]
 position = Vector2(-0.5, 1)
 shape = SubResource("RectangleShape2D_fcu33")
 debug_color = Color(0.9997725, 0, 0.11707086, 0.41960785)
 
-[node name="player_hitbox_to_ground" type="CollisionShape2D" parent="."]
-position = Vector2(0, 6)
-shape = SubResource("RectangleShape2D_qmsq4")
-debug_color = Color(1.7808378e-06, 0.6401258, 0.35921702, 0.41960785)
+[node name="attack_area" type="Area2D" parent="." unique_id=1690539850]
+collision_layer = 4
+collision_mask = 768
 
-[node name="block_area" type="Area2D" parent="."]
+[node name="attack_shape" type="CollisionShape2D" parent="attack_area" unique_id=426357109]
+position = Vector2(-1, -7)
+rotation = 1.5707964
+shape = SubResource("CapsuleShape2D_g2els")
+disabled = true
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="block_area"]
-position = Vector2(-0.5, 1.5)
+[node name="block_area" type="Area2D" parent="." unique_id=1896962378]
+collision_layer = 8
+collision_mask = 768
+
+[node name="block_shape" type="CollisionShape2D" parent="block_area" unique_id=1183086225]
+position = Vector2(8, 1)
 shape = SubResource("RectangleShape2D_g2els")
+disabled = true
 debug_color = Color(0.2887074, 0.4984818, 1, 0.41960785)
 
-[node name="attack_area" type="Area2D" parent="."]
+[node name="ground_collision" type="CollisionShape2D" parent="." unique_id=423530519]
+position = Vector2(-1, 6)
+shape = SubResource("RectangleShape2D_qhqgy")
+debug_color = Color(0, 0.6513985, 0.0364525, 0.41960785)
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="attack_area"]
-position = Vector2(-1, 11)
-shape = SubResource("CapsuleShape2D_g2els")
+[node name="max_block_time" type="Timer" parent="." unique_id=26631384]
+wait_time = 1.5
+
+[connection signal="animation_finished" from="player_animation" to="." method="_on_player_animation_animation_finished"]
+[connection signal="timeout" from="max_block_time" to="." method="_on_max_block_time_timeout"]
