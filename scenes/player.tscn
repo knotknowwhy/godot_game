@@ -744,6 +744,7 @@ size = Vector2(12, 17)
 size = Vector2(8, 4)
 
 [node name="CharacterBody2D" type="CharacterBody2D" unique_id=334274701]
+z_index = 1
 collision_layer = 2
 collision_mask = 192
 script = ExtResource("1_g2els")
