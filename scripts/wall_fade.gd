@@ -98,8 +98,10 @@ func _on_body_entered(body: Node2D) -> void:
 		_player = body
 		# Boost top-level targets to foreground (children with relative z follow automatically)
 		for target in _targets:
-			if target != null and not _targets.has(target.get_parent()):
-				target.z_index = _original_z.get(target, 0) + 2
+			if target != null:
+				var p = target.get_parent() as CanvasItem
+				if p == null or not _targets.has(p):
+					target.z_index = _original_z.get(target, 0) + 2
 		_fade_to(1.0)
 
 func _on_body_exited(body: Node2D) -> void:
@@ -126,6 +128,8 @@ func _fade_to(target_value: float) -> void:
 		_tween.finished.connect(func():
 			if not _is_player_inside:
 				for target in _targets:
-					if target != null and not _targets.has(target.get_parent()):
-						target.z_index = _original_z.get(target, 0)
+					if target != null:
+						var p = target.get_parent() as CanvasItem
+						if p == null or not _targets.has(p):
+							target.z_index = _original_z.get(target, 0)
 		)
