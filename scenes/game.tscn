@@ -3,6 +3,8 @@
 [ext_resource type="TileSet" uid="uid://bihgllmtkyl2c" path="res://assets/tileset/new_tile_set.tres" id="1_lnu2h"]
 [ext_resource type="PackedScene" uid="uid://casgcs7q8ujxx" path="res://scenes/player.tscn" id="2_yqjtg"]
 [ext_resource type="Script" uid="uid://c364vwd2acywd" path="res://scripts/wall_fade.gd" id="3_fade"]
+[ext_resource type="PackedScene" uid="uid://dxei2w4o7gocj" path="res://scenes/spikes.tscn" id="4_lbhrr"]
+[ext_resource type="PackedScene" uid="uid://bk6ckqhlyj1gm" path="res://scenes/skeleton.tscn" id="5_iywne"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_north_wall"]
 size = Vector2(336, 45)
@@ -112,10 +114,10 @@ shape = SubResource("RectangleShape2D_lnu2h")
 
 [node name="player" type="Node" parent="." unique_id=218413921]
 
-[node name="CharacterBody2D" parent="player" unique_id=1936030896 instance=ExtResource("2_yqjtg")]
+[node name="player" parent="player" unique_id=1936030896 instance=ExtResource("2_yqjtg")]
 position = Vector2(-138, 51)
 
-[node name="Camera2D" type="Camera2D" parent="player/CharacterBody2D" unique_id=1386908097]
+[node name="Camera2D" type="Camera2D" parent="player/player" unique_id=1386908097]
 zoom = Vector2(4.98, 4.98)
 
 [node name="world after player render" type="Node" parent="." unique_id=1677691401]
@@ -178,4 +180,12 @@ target_wall = NodePath("../foreground_tun1_southwall")
 position = Vector2(200, -118)
 shape = SubResource("RectangleShape2D_qilfb")
 
+[node name="traps" type="Node" parent="." unique_id=1914298900]
+
+[node name="spikes" parent="traps" unique_id=2038005554 instance=ExtResource("4_lbhrr")]
+position = Vector2(-99, 53)
+
 [node name="entities" type="Node" parent="." unique_id=277488409]
+
+[node name="skeleton" parent="entities" unique_id=1717729264 instance=ExtResource("5_iywne")]
+position = Vector2(-106, 21)

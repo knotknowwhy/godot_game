@@ -394,7 +394,7 @@ animations = [{
 }],
 "loop": 0,
 "name": &"attack_down",
-"speed": 8.0
+"speed": 10.0
 }, {
 "frames": [{
 "duration": 1.0,
@@ -417,7 +417,7 @@ animations = [{
 }],
 "loop": 0,
 "name": &"attack_left",
-"speed": 8.0
+"speed": 10.0
 }, {
 "frames": [{
 "duration": 1.0,
@@ -440,7 +440,7 @@ animations = [{
 }],
 "loop": 0,
 "name": &"attack_right",
-"speed": 8.0
+"speed": 10.0
 }, {
 "frames": [{
 "duration": 1.0,
@@ -463,7 +463,7 @@ animations = [{
 }],
 "loop": 0,
 "name": &"attack_up",
-"speed": 8.0
+"speed": 10.0
 }, {
 "frames": [{
 "duration": 1.0,
@@ -743,7 +743,7 @@ size = Vector2(12, 17)
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_qhqgy"]
 size = Vector2(8, 4)
 
-[node name="CharacterBody2D" type="CharacterBody2D" unique_id=334274701]
+[node name="player" type="CharacterBody2D" unique_id=334274701]
 z_index = 1
 collision_layer = 2
 collision_mask = 192
@@ -751,38 +751,38 @@ script = ExtResource("1_g2els")
 
 [node name="player_animation" type="AnimatedSprite2D" parent="." unique_id=1951950856]
 sprite_frames = SubResource("SpriteFrames_gvmy4")
-animation = &"block_right"
+animation = &"attack_up"
 autoplay = "idle_down"
 
-[node name="hit_area" type="Area2D" parent="." unique_id=799909374]
+[node name="hit_area_player" type="Area2D" parent="." unique_id=799909374]
 collision_mask = 2147484416
 
-[node name="player_hitbox_to_enemy" type="CollisionShape2D" parent="hit_area" unique_id=621852973]
+[node name="player_hitbox_to_enemy" type="CollisionShape2D" parent="hit_area_player" unique_id=621852973]
 position = Vector2(-0.5, 1)
 shape = SubResource("RectangleShape2D_fcu33")
 debug_color = Color(0.9997725, 0, 0.11707086, 0.41960785)
 
-[node name="attack_area" type="Area2D" parent="." unique_id=1690539850]
+[node name="attack_area_player" type="Area2D" parent="." unique_id=1690539850]
 collision_layer = 4
 collision_mask = 768
 
-[node name="attack_shape" type="CollisionShape2D" parent="attack_area" unique_id=426357109]
+[node name="attack_shape_player" type="CollisionShape2D" parent="attack_area_player" unique_id=426357109]
 position = Vector2(-1, -7)
 rotation = 1.5707964
 shape = SubResource("CapsuleShape2D_g2els")
 disabled = true
 
-[node name="block_area" type="Area2D" parent="." unique_id=1896962378]
+[node name="block_area_player" type="Area2D" parent="." unique_id=1896962378]
 collision_layer = 8
 collision_mask = 768
 
-[node name="block_shape" type="CollisionShape2D" parent="block_area" unique_id=1183086225]
+[node name="block_shape" type="CollisionShape2D" parent="block_area_player" unique_id=1183086225]
 position = Vector2(8, 1)
 shape = SubResource("RectangleShape2D_g2els")
 disabled = true
 debug_color = Color(0.2887074, 0.4984818, 1, 0.41960785)
 
-[node name="ground_collision" type="CollisionShape2D" parent="." unique_id=423530519]
+[node name="player" type="CollisionShape2D" parent="." unique_id=423530519]
 position = Vector2(-1, 6)
 shape = SubResource("RectangleShape2D_qhqgy")
 debug_color = Color(0, 0.6513985, 0.0364525, 0.41960785)

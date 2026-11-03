@@ -1,27 +1,36 @@
 extends Node2D
 
-@onready var something_on_top: CollisionShape2D = $something_on_top/something_on_top
-@onready var kill_zone: CollisionShape2D = $kill_zone/kill_zone
-@onready var before_collision: Timer = $before_collision
-@onready var after_collision: Timer = $after_collision
-@onready var animated_sprite_2d: AnimatedSprite2D = $AnimatedSprite2D
+@onready var animations: AnimatedSprite2D = $animations
+@onready var kill_zone: Area2D = $kill_zone
+@onready var detect_area: Area2D = $detect_area
+@onready var hit_shape: CollisionShape2D = $kill_zone/hit_shape
+@onready var detect_shape: CollisionShape2D = $detect_area/detect_shape
+@onready var before_spike_up: Timer = $before_spike_up
+@onready var reset_after_spike_up: Timer = $reset_after_spike_up
 
 func _ready() -> void:
-	pass
+	animations.play("down")
+	hit_shape.disabled = true
+	detect_shape.disabled = false
 
 func _process(delta: float) -> void:
 	pass
 
-func _on_before_collision_timeout() -> void:
-	animated_sprite_2d.play("up")
-	kill_zone.disabled = false
-	something_on_top.disabled = true
-	after_collision.start()
+func _on_before_spike_up_timeout() -> void:
+	animations.play("up")
+	reset_after_spike_up.start()
 
-func _on_after_collision_timeout() -> void:
-	animated_sprite_2d.play("down")
-	kill_zone.disabled = true
-	something_on_top.disabled = false
+func _on_detect_area_body_entered(body: Node2D) -> void:
+	before_spike_up.start()
 
-func _on_something_on_top_area_entered(area: Area2D) -> void:
-	before_collision.start()
+func _on_reset_after_spike_up_timeout() -> void:
+	animations.play("down")
+
+func _on_animations_animation_finished() -> void:
+	if animations.animation == "up":
+		hit_shape.disabled = false
+		detect_shape.disabled = true
+		reset_after_spike_up.start()
+	if animations.animation == "down":
+		hit_shape.disabled = true
+		detect_shape.disabled = false

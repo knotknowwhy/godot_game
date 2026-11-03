@@ -1,0 +1,136 @@
+[gd_scene format=3 uid="uid://dxei2w4o7gocj"]
+
+[ext_resource type="Texture2D" uid="uid://dyyio4ptys6kk" path="res://assets/sprites/spikes.png" id="1_5pg7g"]
+[ext_resource type="Script" uid="uid://bgiynmymlfr6e" path="res://scripts/spikes.gd" id="1_xbcdo"]
+[ext_resource type="PackedScene" uid="uid://4m1pc8hk6h6p" path="res://scenes/kill_zone.tscn" id="3_bflj7"]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_xbcdo"]
+atlas = ExtResource("1_5pg7g")
+region = Rect2(52, 0, 13, 14)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_bflj7"]
+atlas = ExtResource("1_5pg7g")
+region = Rect2(39, 0, 13, 14)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_kd5gq"]
+atlas = ExtResource("1_5pg7g")
+region = Rect2(26, 0, 13, 14)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_0vi4p"]
+atlas = ExtResource("1_5pg7g")
+region = Rect2(13, 0, 13, 14)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_w4mxr"]
+atlas = ExtResource("1_5pg7g")
+region = Rect2(0, 0, 13, 14)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_xa8pu"]
+atlas = ExtResource("1_5pg7g")
+region = Rect2(0, 0, 13, 14)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_nmogx"]
+atlas = ExtResource("1_5pg7g")
+region = Rect2(13, 0, 13, 14)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_3hxik"]
+atlas = ExtResource("1_5pg7g")
+region = Rect2(26, 0, 13, 14)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_d77p4"]
+atlas = ExtResource("1_5pg7g")
+region = Rect2(39, 0, 13, 14)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_nyr5e"]
+atlas = ExtResource("1_5pg7g")
+region = Rect2(52, 0, 13, 14)
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_qb2ec"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_xbcdo")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_bflj7")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_kd5gq")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_0vi4p")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_w4mxr")
+}],
+"loop": 0,
+"name": &"down",
+"speed": 9.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_xa8pu")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_nmogx")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_3hxik")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_d77p4")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_nyr5e")
+}],
+"loop": 0,
+"name": &"up",
+"speed": 11.0
+}]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_yaxq5"]
+size = Vector2(12, 13)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_qb2ec"]
+size = Vector2(12, 12)
+
+[node name="spikes" type="Node2D" unique_id=2038005554]
+script = ExtResource("1_xbcdo")
+
+[node name="animations" type="AnimatedSprite2D" parent="." unique_id=795644669]
+sprite_frames = SubResource("SpriteFrames_qb2ec")
+animation = &"up"
+autoplay = "down"
+frame = 4
+frame_progress = 1.0
+
+[node name="kill_zone" parent="." unique_id=1532967895 instance=ExtResource("3_bflj7")]
+collision_layer = 128
+collision_mask = 2
+
+[node name="hit_shape" type="CollisionShape2D" parent="kill_zone" unique_id=557190599]
+position = Vector2(0, 0.5)
+shape = SubResource("RectangleShape2D_yaxq5")
+disabled = true
+debug_color = Color(0.9820774, 0.071832724, 0.2929737, 0.41960785)
+
+[node name="detect_area" type="Area2D" parent="." unique_id=1852840786]
+collision_layer = 128
+collision_mask = 2
+
+[node name="detect_shape" type="CollisionShape2D" parent="detect_area" unique_id=545043721]
+position = Vector2(0, 1)
+shape = SubResource("RectangleShape2D_qb2ec")
+debug_color = Color(0, 0.64844453, 0.19047421, 0.41960785)
+
+[node name="before_spike_up" type="Timer" parent="." unique_id=285363970]
+wait_time = 0.2
+one_shot = true
+
+[node name="reset_after_spike_up" type="Timer" parent="." unique_id=1156062236]
+wait_time = 4.0
+one_shot = true
+
+[connection signal="animation_finished" from="animations" to="." method="_on_animations_animation_finished"]
+[connection signal="body_entered" from="detect_area" to="." method="_on_detect_area_body_entered"]
+[connection signal="timeout" from="before_spike_up" to="." method="_on_before_spike_up_timeout"]
+[connection signal="timeout" from="reset_after_spike_up" to="." method="_on_reset_after_spike_up_timeout"]

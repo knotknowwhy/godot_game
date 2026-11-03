@@ -1,8 +1,8 @@
 extends CharacterBody2D
 
 @onready var player_animation: AnimatedSprite2D = $player_animation
-@onready var block_shape: CollisionShape2D = $block_area/block_shape
-@onready var attack_shape: CollisionShape2D = $attack_area/attack_shape
+@onready var block_shape: CollisionShape2D = $block_area_player/block_shape
+@onready var attack_shape: CollisionShape2D = $attack_area_player/attack_shape_player
 @onready var max_block_time: Timer = $max_block_time
 
 const SPEED = 100.0
