@@ -1,6 +1,7 @@
-[gd_resource type="TileSet" load_steps=3 format=3 uid="uid://bihgllmtkyl2c"]
+[gd_resource type="TileSet" load_steps=5 format=3 uid="uid://bihgllmtkyl2c"]
 
 [ext_resource type="Texture2D" uid="uid://ccasvi4yglngy" path="res://assets/sprites/mainlevbuild.png" id="1_ws8wv"]
+[ext_resource type="Texture2D" uid="uid://bho1vymo78h06" path="res://assets/tileset/asdasdasd.png" id="2_ytqml"]
 
 [sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_yqjtg"]
 texture = ExtResource("1_ws8wv")
@@ -998,5 +999,34 @@ texture = ExtResource("1_ws8wv")
 38:16/0 = 0
 3:3/0 = 0
 
+[sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_tshut"]
+texture = ExtResource("2_ytqml")
+texture_region_size = Vector2i(18, 18)
+0:0/0 = 0
+1:0/0 = 0
+2:0/0 = 0
+3:0/0 = 0
+0:1/0 = 0
+1:1/0 = 0
+2:1/0 = 0
+3:1/0 = 0
+0:2/0 = 0
+1:2/0 = 0
+2:2/0 = 0
+3:2/0 = 0
+0:3/0 = 0
+1:3/0 = 0
+2:3/0 = 0
+3:3/0 = 0
+0:4/0 = 0
+1:4/0 = 0
+2:4/0 = 0
+3:4/0 = 0
+0:5/0 = 0
+1:5/0 = 0
+2:5/0 = 0
+3:5/0 = 0
+
 [resource]
 sources/0 = SubResource("TileSetAtlasSource_yqjtg")
+sources/2 = SubResource("TileSetAtlasSource_tshut")

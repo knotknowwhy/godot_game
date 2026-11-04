@@ -1,8 +1,9 @@
-[gd_scene load_steps=19 format=4 uid="uid://dlgmtcau57j4d"]
+[gd_scene load_steps=24 format=4 uid="uid://dlgmtcau57j4d"]
 
 [ext_resource type="TileSet" uid="uid://bihgllmtkyl2c" path="res://assets/tileset/new_tile_set.tres" id="1_lnu2h"]
 [ext_resource type="PackedScene" uid="uid://casgcs7q8ujxx" path="res://scenes/player.tscn" id="2_yqjtg"]
 [ext_resource type="Script" uid="uid://c364vwd2acywd" path="res://scripts/wall_fade.gd" id="3_fade"]
+[ext_resource type="Texture2D" uid="uid://bho1vymo78h06" path="res://assets/tileset/asdasdasd.png" id="3_p57ef"]
 [ext_resource type="PackedScene" uid="uid://dxei2w4o7gocj" path="res://scenes/spikes.tscn" id="4_lbhrr"]
 [ext_resource type="PackedScene" uid="uid://bk6ckqhlyj1gm" path="res://scenes/skeleton.tscn" id="5_iywne"]
 
@@ -34,7 +35,19 @@ size = Vector2(16, 32)
 size = Vector2(16, 32)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_lnu2h"]
-size = Vector2(112, 9)
+size = Vector2(108, 9)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_u5sy4"]
+size = Vector2(5, 102)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_gee14"]
+size = Vector2(7.5, 70)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_0tnpc"]
+size = Vector2(277.25, 5)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_vtaks"]
+size = Vector2(5.75, 229.5)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_inter_fade_trigger"]
 size = Vector2(304, 48)
@@ -67,7 +80,7 @@ collision_layer = 193
 collision_mask = 0
 
 [node name="north_wall_col" type="CollisionShape2D" parent="world before player render/room_boundaries"]
-position = Vector2(-8, -233.5)
+position = Vector2(-7, -238)
 shape = SubResource("RectangleShape2D_north_wall")
 
 [node name="south_wall_col" type="CollisionShape2D" parent="world before player render/room_boundaries"]
@@ -79,7 +92,7 @@ position = Vector2(-168, -72)
 shape = SubResource("RectangleShape2D_west_wall")
 
 [node name="east_wall_col" type="CollisionShape2D" parent="world before player render/room_boundaries"]
-position = Vector2(152, 11.5)
+position = Vector2(153, 13)
 shape = SubResource("RectangleShape2D_east_wall")
 
 [node name="east_wall_col_2" type="CollisionShape2D" parent="world before player render/room_boundaries"]
@@ -107,8 +120,24 @@ position = Vector2(202, -95.5)
 shape = SubResource("RectangleShape2D_lnu2h")
 
 [node name="north_tun1_col" type="CollisionShape2D" parent="world before player render/room_boundaries"]
-position = Vector2(204, -165)
+position = Vector2(202, -165)
 shape = SubResource("RectangleShape2D_lnu2h")
+
+[node name="east_boss_top" type="CollisionShape2D" parent="world before player render/room_boundaries"]
+position = Vector2(253.5, -212)
+shape = SubResource("RectangleShape2D_u5sy4")
+
+[node name="east_boss_bottom" type="CollisionShape2D" parent="world before player render/room_boundaries"]
+position = Vector2(253.25, -66)
+shape = SubResource("RectangleShape2D_gee14")
+
+[node name="north_boss_wall" type="CollisionShape2D" parent="world before player render/room_boundaries"]
+position = Vector2(390.375, -259)
+shape = SubResource("RectangleShape2D_0tnpc")
+
+[node name="right_boss_wall" type="CollisionShape2D" parent="world before player render/room_boundaries"]
+position = Vector2(532.125, -147.75)
+shape = SubResource("RectangleShape2D_vtaks")
 
 [node name="enviroment" type="Node" parent="."]
 
@@ -121,6 +150,15 @@ position = Vector2(-138, 51)
 zoom = Vector2(4.98, 4.98)
 
 [node name="world after player render" type="Node" parent="."]
+
+[node name="TextureRect" type="TextureRect" parent="world after player render"]
+texture_filter = 1
+offset_left = 370.0
+offset_top = -282.0
+offset_right = 442.0
+offset_bottom = -174.0
+scale = Vector2(0.6, 0.6)
+texture = ExtResource("3_p57ef")
 
 [node name="foreground_intermediary_wall" type="TileMapLayer" parent="world after player render"]
 tile_map_data = PackedByteArray("AAD1//r/AAABAAcAAAD2//r/AAAHAAcAAAD3//r/AAAIAAcAAAD4//r/AAAFAAcAAAD5//r/AAAGAAcAAAD6//r/AAAHAAcAAAD7//r/AAAIAAcAAAD8//r/AAAFAAcAAAD9//r/AAAGAAcAAAADAPr/AAAIAAcAAAAEAPr/AAAFAAcAAAAFAPr/AAAGAAcAAAAGAPr/AAAHAAcAAAAHAPr/AAAIAAcAAAAIAPr/AAAFAAcAAAAJAPr/AAASAAcAAAD1//v/AAABAAgAAAD2//v/AAAHAAgAAAD3//v/AAAIAAgAAAD4//v/AAAFAAgAAAD5//v/AAAGAAgAAAD6//v/AAAHAAgAAAD7//v/AAAIAAgAAAD8//v/AAAFAAgAAAD9//v/AAAGAAgAAAADAPv/AAAIAAgAAAAEAPv/AAAFAAgAAAAFAPv/AAAGAAgAAAAGAPv/AAAHAAgAAAAHAPv/AAAIAAgAAAAIAPv/AAAFAAgAAAAJAPv/AAASAAgAAAD1//z/AAABAAkAAAD2//z/AAAHAAkAAAD3//z/AAAIAAkAAAD4//z/AAAFAAkAAAD5//z/AAAGAAkAAAD6//z/AAAHAAkAAAD7//z/AAAIAAkAAAD8//z/AAAFAAkAAAD9//z/AAAGAAkAAAADAPz/AAAIAAkAAAAEAPz/AAAFAAkAAAAFAPz/AAAGAAkAAAAGAPz/AAAHAAkAAAAHAPz/AAAIAAkAAAAIAPz/AAAFAAkAAAAJAPz/AAASAAkAAAA=")
@@ -143,7 +181,7 @@ tile_set = ExtResource("1_lnu2h")
 
 [node name="tunnel_arch" type="TileMapLayer" parent="world after player render"]
 z_index = 2
-tile_map_data = PackedByteArray("AAAJAPT/AAAbAAgAAAAJAPX/AAAbAAkAAAAJAPb/AAAbAAoAAAAPAPP/AAAbAAcAAAAPAPT/AAAbAAgAAAAPAPX/AAAbAAkAAAAPAPb/AAAbAAoAAAAJAPf/AAAbAAsAAAAJAPP/AAAbAAcAAAA=")
+tile_map_data = PackedByteArray("AAAJAPT/AAAbAAgAAAAJAPX/AAAbAAkAAAAJAPb/AAAbAAoAAAAPAPP/AAAbAAcAAAAPAPT/AAAbAAgAAAAPAPX/AAAbAAkAAAAPAPb/AAAbAAoAAAAJAPf/AAAbAAsAAAAJAPP/AAAbAAcAAAAPAPf/AAAbAAsAAAA=")
 tile_set = ExtResource("1_lnu2h")
 
 [node name="foreground_south_wall" type="TileMapLayer" parent="world after player render"]
@@ -151,6 +189,7 @@ tile_map_data = PackedByteArray("AAD2/wUAAAAHAAcAAAD3/wUAAAAIAAcAAAD4/wUAAAAFAAc
 tile_set = ExtResource("1_lnu2h")
 
 [node name="south_fade_trigger" type="Area2D" parent="world after player render"]
+position = Vector2(20, -1)
 collision_layer = 0
 collision_mask = 2
 script = ExtResource("3_fade")
@@ -161,24 +200,27 @@ position = Vector2(-8, 103)
 shape = SubResource("RectangleShape2D_south_fade_trigger")
 
 [node name="foreground_tun1_southwall" type="TileMapLayer" parent="world after player render"]
-tile_map_data = PackedByteArray("AAAKAPf/AAACAAoAAFAKAPj/AAAGAAoAAAALAPf/AAACAAkAAFALAPj/AAAHAAoAAAAMAPf/AAACAAgAAFAMAPj/AAAGAAoAAAANAPf/AAACAAoAAFANAPj/AAAHAAoAAAAOAPf/AAACAAkAAFAOAPj/AAAGAAoAAAAPAPf/AAACAAgAAFAPAPj/AAAHAAoAAAALAPn/AAAGAAkAAAAMAPn/AAAHAAkAAAANAPn/AAAFAAkAAAAOAPn/AAAGAAkAAAAPAPn/AAAHAAkAAAAKAPn/AAAFAAkAAAA=")
+tile_map_data = PackedByteArray("AAAKAPf/AAACAAoAAFAKAPj/AAAGAAoAAAALAPf/AAACAAkAAFALAPj/AAAHAAoAAAAMAPf/AAACAAgAAFAMAPj/AAAGAAoAAAANAPf/AAACAAoAAFANAPj/AAAHAAoAAAAOAPf/AAACAAkAAFAOAPj/AAAGAAoAAAALAPn/AAAGAAkAAAAMAPn/AAAHAAkAAAANAPn/AAAFAAkAAAAOAPn/AAAGAAkAAAAKAPn/AAAFAAkAAAA=")
 tile_set = ExtResource("1_lnu2h")
 
 [node name="background_foreground_tun1_southwall2" type="TileMapLayer" parent="world after player render/foreground_tun1_southwall"]
 z_index = -1
 z_as_relative = false
-tile_map_data = PackedByteArray("AAAJAPj/AAAIAAkAAAAJAPn/AAAIAAoAAAAJAPf/AAACAAgAAFA=")
+tile_map_data = PackedByteArray("AAAJAPf/AAAGAAkAAAAPAPj/AAAGAAoAAAAPAPn/AAAGAAoAAAAPAPf/AAAGAAkAAAAJAPj/AAAGAAoAAAAJAPn/AAAGAAoAAAA=")
 tile_set = ExtResource("1_lnu2h")
 
 [node name="tunnel_fade_trigger" type="Area2D" parent="world after player render" node_paths=PackedStringArray("target_wall")]
+position = Vector2(24, -15)
 collision_layer = 0
 collision_mask = 2
 script = ExtResource("3_fade")
 target_wall = NodePath("../foreground_tun1_southwall")
 
 [node name="trigger_shape" type="CollisionShape2D" parent="world after player render/tunnel_fade_trigger"]
-position = Vector2(211, -118)
+position = Vector2(178, -104)
 shape = SubResource("RectangleShape2D_qilfb")
+
+[node name="TileMapLayer" type="TileMapLayer" parent="world after player render"]
 
 [node name="traps" type="Node" parent="."]
 
