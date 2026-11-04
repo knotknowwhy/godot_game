@@ -1,0 +1,26 @@
+[gd_scene load_steps=3 format=3 uid="uid://bgxc2a5a1wasx"]
+
+[ext_resource type="Texture2D" uid="uid://banp37wr3o2lw" path="res://assets/sprites/bg.png" id="1_o5qli"]
+[ext_resource type="Script" uid="uid://grlxji58twvv" path="res://scenes/main_game_start_button.gd" id="2_0wfyh"]
+
+[node name="Main" type="Node2D"]
+
+[node name="TextureRect" type="TextureRect" parent="."]
+offset_left = -100.0
+offset_top = -58.0
+offset_right = 104.0
+offset_bottom = 81.0
+texture = ExtResource("1_o5qli")
+
+[node name="Button" type="Button" parent="."]
+texture_filter = 1
+texture_repeat = 1
+offset_left = 334.0
+offset_top = 182.0
+offset_right = 751.0
+offset_bottom = 349.0
+theme_override_font_sizes/font_size = 35
+text = "Start Game"
+script = ExtResource("2_0wfyh")
+
+[connection signal="pressed" from="Button" to="Button" method="_on_pressed"]
