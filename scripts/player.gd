@@ -4,15 +4,29 @@ extends CharacterBody2D
 @onready var block_shape: CollisionShape2D = $block_area_player/block_shape
 @onready var attack_shape: CollisionShape2D = $attack_area_player/attack_shape_player
 @onready var max_block_time: Timer = $max_block_time
+@onready var health_bar = $hud/margin/hbox/player_health_bar
 
 const SPEED = 100.0
 
+@export var max_health: int = 100
+var health: int = max_health
+
 var isAttacking = false
 var isBlocking = false
+var is_invulnerable: bool = false
+var is_dead: bool = false
+var damage_tween: Tween = null
 
 var facing_direction: Vector2 = Vector2.DOWN
 
+func _ready() -> void:
+	health = max_health
+	if health_bar:
+		health_bar.set_health(health, max_health)
+
 func _physics_process(delta: float) -> void:
+	if is_dead:
+		return
 	
 	# get direction inputs
 	var direction_x := 0.0
@@ -126,12 +140,66 @@ func _physics_process(delta: float) -> void:
 				block_shape.rotation = 0.0
 				(block_shape.shape as RectangleShape2D).size = Vector2(12, 11.5)
 	
-	
 	if isBlocking and Input.is_action_just_released("Block_sword"):
 		isBlocking = false
 		block_shape.disabled = true
 	
 	move_and_slide()
+
+func take_damage(amount: int) -> void:
+	if is_dead or is_invulnerable:
+		return
+	
+	if isBlocking:
+		print("Player blocked the attack!")
+		_flash_block()
+		return
+	
+	health = max(0, health - amount)
+	print("Player took damage! Current health: ", health)
+	
+	if health_bar:
+		health_bar.set_health(health, max_health)
+	
+	if health <= 0:
+		_die()
+	else:
+		_flash_red()
+
+func _flash_block() -> void:
+	if damage_tween:
+		damage_tween.kill()
+	player_animation.modulate = Color(0.7, 0.9, 1.5)
+	damage_tween = create_tween()
+	damage_tween.tween_property(player_animation, "modulate", Color.WHITE, 0.15)
+
+func _flash_red() -> void:
+	is_invulnerable = true
+	if damage_tween:
+		damage_tween.kill()
+	
+	# Reddish damage tint
+	player_animation.modulate = Color(1.0, 0.25, 0.25)
+	damage_tween = create_tween()
+	damage_tween.tween_property(player_animation, "modulate", Color.WHITE, 0.2)
+	# Invulnerability blinking
+	damage_tween.tween_property(player_animation, "modulate:a", 0.4, 0.1)
+	damage_tween.tween_property(player_animation, "modulate:a", 1.0, 0.1)
+	damage_tween.tween_property(player_animation, "modulate:a", 0.4, 0.1)
+	damage_tween.tween_property(player_animation, "modulate:a", 1.0, 0.1)
+	damage_tween.tween_callback(func(): is_invulnerable = false)
+
+func _die() -> void:
+	is_dead = true
+	velocity = Vector2.ZERO
+	if damage_tween:
+		damage_tween.kill()
+	
+	player_animation.modulate = Color(1.0, 0.25, 0.25)
+	var death_tween = create_tween()
+	death_tween.tween_property(player_animation, "modulate:a", 0.0, 0.6)
+	death_tween.tween_interval(0.3)
+	death_tween.tween_callback(func(): get_tree().reload_current_scene.call_deferred())
 
 func _on_player_animation_animation_finished() -> void:
 	if player_animation.animation == "attack_right" or player_animation.animation == "attack_left" or player_animation.animation == "attack_up" or player_animation.animation == "attack_down":
@@ -142,7 +210,6 @@ func _on_player_animation_animation_finished() -> void:
 		if not Input.is_action_pressed("Block_sword"):
 			isBlocking = false
 			block_shape.disabled = true
-
 
 func _on_max_block_time_timeout() -> void:
 	isBlocking = false

@@ -1,8 +1,9 @@
-[gd_scene load_steps=49 format=3 uid="uid://bk6ckqhlyj1gm"]
+[gd_scene load_steps=50 format=3 uid="uid://bk6ckqhlyj1gm"]
 
 [ext_resource type="Texture2D" uid="uid://biocelra1uj7p" path="res://assets/sprites/Skeleton/Skeleton_Idle.png" id="1_pbvs3"]
 [ext_resource type="Script" uid="uid://cddej8t36d0o5" path="res://scripts/skeleton.gd" id="1_txkty"]
 [ext_resource type="Texture2D" uid="uid://b87mh011582ij" path="res://assets/sprites/Skeleton/Skeleton_Move.png" id="3_ivqcw"]
+[ext_resource type="Script" path="res://scripts/floating_health_bar.gd" id="4_fhbar"]
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_pbvs3"]
 atlas = ExtResource("1_pbvs3")
@@ -379,6 +380,12 @@ position = Vector2(0, 13)
 shape = SubResource("CircleShape2D_qb2ec")
 debug_color = Color(0.5147004, 0.5446115, 0.5292818, 0.41960785)
 
+[node name="health_bar" type="Node2D" parent="."]
+position = Vector2(0, -14)
+script = ExtResource("4_fhbar")
+
 [connection signal="area_entered" from="hit_area" to="." method="_on_hit_area_area_entered"]
 [connection signal="area_entered" from="see_area" to="." method="_on_see_area_area_entered"]
 [connection signal="area_exited" from="see_area" to="." method="_on_see_area_area_exited"]
+[connection signal="body_entered" from="see_area" to="." method="_on_see_area_body_entered"]
+[connection signal="body_exited" from="see_area" to="." method="_on_see_area_body_exited"]

@@ -1,7 +1,8 @@
-[gd_scene load_steps=100 format=3 uid="uid://casgcs7q8ujxx"]
+[gd_scene load_steps=101 format=3 uid="uid://casgcs7q8ujxx"]
 
 [ext_resource type="Texture2D" uid="uid://blxmx43ltslg4" path="res://assets/sprites/player_sheet.png" id="1_3vyb7"]
 [ext_resource type="Script" uid="uid://dxwpcmmldsgvg" path="res://scripts/player.gd" id="1_g2els"]
+[ext_resource type="Script" path="res://scripts/player_health_bar.gd" id="3_hud_bar"]
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_smehm"]
 atlas = ExtResource("1_3vyb7")
@@ -789,6 +790,34 @@ debug_color = Color(0, 0.6513985, 0.0364525, 0.41960785)
 
 [node name="max_block_time" type="Timer" parent="."]
 wait_time = 1.5
+
+[node name="hud" type="CanvasLayer" parent="."]
+
+[node name="margin" type="MarginContainer" parent="hud"]
+offset_right = 180.0
+offset_bottom = 40.0
+theme_override_constants/margin_left = 18
+theme_override_constants/margin_top = 18
+
+[node name="hbox" type="HBoxContainer" parent="hud/margin"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="hp_label" type="Label" parent="hud/margin/hbox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.85, 0.85, 0.9, 1)
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 1)
+theme_override_constants/shadow_offset_x = 1
+theme_override_constants/shadow_offset_y = 1
+theme_override_font_sizes/font_size = 11
+text = "HP"
+vertical_alignment = 1
+
+[node name="player_health_bar" type="Control" parent="hud/margin/hbox"]
+custom_minimum_size = Vector2(144, 14)
+layout_mode = 2
+size_flags_vertical = 4
+script = ExtResource("3_hud_bar")
 
 [connection signal="animation_finished" from="player_animation" to="." method="_on_player_animation_animation_finished"]
 [connection signal="timeout" from="max_block_time" to="." method="_on_max_block_time_timeout"]
