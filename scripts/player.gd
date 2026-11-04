@@ -199,7 +199,12 @@ func _die() -> void:
 	var death_tween = create_tween()
 	death_tween.tween_property(player_animation, "modulate:a", 0.0, 0.6)
 	death_tween.tween_interval(0.3)
-	death_tween.tween_callback(func(): get_tree().reload_current_scene.call_deferred())
+	death_tween.tween_callback(func():
+		if ResourceLoader.exists("res://scenes/u_dead.tscn"):
+			get_tree().change_scene_to_file.call_deferred("res://scenes/u_dead.tscn")
+		else:
+			get_tree().reload_current_scene.call_deferred()
+	)
 
 func _on_player_animation_animation_finished() -> void:
 	if player_animation.animation == "attack_right" or player_animation.animation == "attack_left" or player_animation.animation == "attack_up" or player_animation.animation == "attack_down":
