@@ -36,12 +36,20 @@ func _apply_texture() -> void:
 	match upgrade_id:
 		0:
 			sprite.texture = TEX_HEART
+			if halo_sprite:
+				halo_sprite.modulate = Color(1.0, 0.35, 0.45, 0.55)
 		1:
 			sprite.texture = TEX_SWORD
+			if halo_sprite:
+				halo_sprite.modulate = Color(1.0, 0.88, 0.35, 0.55)
 		2:
 			sprite.texture = TEX_BOOTS
+			if halo_sprite:
+				halo_sprite.modulate = Color(0.35, 0.95, 1.0, 0.55)
 		_:
 			sprite.texture = TEX_SOUL
+			if halo_sprite:
+				halo_sprite.modulate = Color(1.0, 0.4, 0.85, 0.55)
 
 func pop_out_drop(drop_offset: Vector2) -> void:
 	can_collect = false
