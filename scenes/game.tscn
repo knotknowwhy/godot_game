@@ -18,7 +18,7 @@ size = Vector2(336, 11)
 size = Vector2(16, 384)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_east_wall"]
-size = Vector2(16, 264)
+size = Vector2(16, 218)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_765ca"]
 size = Vector2(15, 62)
@@ -70,7 +70,7 @@ size = Vector2(304, 44)
 size = Vector2(112, 48)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_we6vb"]
-size = Vector2(272, 44)
+size = Vector2(274, 44)
 
 [node name="game" type="Node2D" unique_id=17174621]
 
@@ -106,7 +106,7 @@ position = Vector2(-168, -72)
 shape = SubResource("RectangleShape2D_west_wall")
 
 [node name="east_wall_col" type="CollisionShape2D" parent="world before player render/room_boundaries" unique_id=1087774213]
-position = Vector2(153, -12)
+position = Vector2(153, 11)
 shape = SubResource("RectangleShape2D_east_wall")
 
 [node name="east_wall_col_2" type="CollisionShape2D" parent="world before player render/room_boundaries" unique_id=2050024822]
@@ -253,13 +253,22 @@ script = ExtResource("3_fade")
 target_wall = NodePath("../south_boss_foregroun")
 
 [node name="trigger_shape" type="CollisionShape2D" parent="world after player render/south_boss_fade_trigger" unique_id=421081635]
-position = Vector2(393, -55)
+position = Vector2(392, -55)
 shape = SubResource("RectangleShape2D_we6vb")
 
 [node name="traps" type="Node" parent="." unique_id=935115413]
 
 [node name="spikes" parent="traps" unique_id=725184819 instance=ExtResource("4_lbhrr")]
-position = Vector2(-99, 53)
+position = Vector2(-110, 51)
+
+[node name="spikes" parent="traps/spikes" unique_id=2038005554 instance=ExtResource("4_lbhrr")]
+position = Vector2(200, 12)
+
+[node name="spikes" parent="traps/spikes/spikes" unique_id=979487528 instance=ExtResource("4_lbhrr")]
+position = Vector2(-43, -72)
+
+[node name="spikes2" parent="traps/spikes" unique_id=2112732714 instance=ExtResource("4_lbhrr")]
+position = Vector2(57, -36)
 
 [node name="entities" type="Node" parent="." unique_id=896023218]
 

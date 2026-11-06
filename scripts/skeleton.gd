@@ -26,6 +26,9 @@ const STRIKE_NUDGE_SPEED: float = 38.0
 var facing_direction: Vector2 = Vector2.DOWN
 var attack_direction: Vector2 = Vector2.DOWN
 
+const PICKUP_SCENE = preload("res://scenes/pickup.tscn")
+const FLOATING_TEXT_SCENE = preload("res://scenes/floating_text.tscn")
+
 @export var max_health: int = 100
 @export var damage_per_hit: int = 35
 @export var attack_damage: int = 15
@@ -345,7 +348,13 @@ func _on_hit_area_area_entered(area: Area2D) -> void:
 		var kb_dir = (global_position - area.global_position).normalized()
 		if kb_dir == Vector2.ZERO:
 			kb_dir = -facing_direction
-		take_damage(damage_per_hit, kb_dir)
+		
+		# Factor in player's active damage boost if applicable
+		var effective_damage = damage_per_hit
+		if player_target and is_instance_valid(player_target) and "damage_multiplier" in player_target:
+			effective_damage = int(damage_per_hit * player_target.damage_multiplier)
+			
+		take_damage(effective_damage, kb_dir)
 
 func take_damage(amount: int, knockback_dir: Vector2 = Vector2.ZERO) -> void:
 	if is_dead or is_invulnerable:
@@ -365,6 +374,16 @@ func take_damage(amount: int, knockback_dir: Vector2 = Vector2.ZERO) -> void:
 	
 	if health_bar:
 		health_bar.set_health(health, max_health)
+	
+	# Spawn floating combat damage number
+	if FLOATING_TEXT_SCENE:
+		var ft = FLOATING_TEXT_SCENE.instantiate()
+		ft.global_position = global_position + Vector2(randf_range(-6, 6), -14)
+		get_parent().add_child(ft)
+		if is_critical:
+			ft.spawn("%d CRIT!" % final_damage, Color(1.0, 0.88, 0.25), 11, 22.0, 0.6)
+		else:
+			ft.spawn("%d" % final_damage, Color.WHITE, 10, 16.0, 0.5)
 	
 	if health <= 0:
 		_die()
@@ -430,10 +449,41 @@ func _die() -> void:
 		var ht = create_tween()
 		ht.tween_property(health_bar, "modulate:a", 0.0, 0.25)
 	
+	_try_spawn_drop()
+	
 	animation.modulate = Color(1.0, 0.25, 0.25)
 	var death_tween = create_tween()
 	death_tween.tween_property(animation, "modulate:a", 0.0, 0.25)
 	death_tween.tween_callback(queue_free)
+
+func _try_spawn_drop() -> void:
+	if not PICKUP_SCENE:
+		return
+	# 70% chance of dropping a boost or potion
+	if randf() > 0.70:
+		return
+	
+	var pickup = PICKUP_SCENE.instantiate()
+	pickup.global_position = global_position
+	
+	var roll = randf()
+	if player_target and is_instance_valid(player_target) and "health" in player_target and "max_health" in player_target and player_target.health <= player_target.max_health * 0.5:
+		# Increase health drop probability if player is injured
+		if roll < 0.60:
+			pickup.pickup_type = 0 # Type.HEALTH
+		elif roll < 0.80:
+			pickup.pickup_type = 1 # Type.SPEED
+		else:
+			pickup.pickup_type = 2 # Type.POWER
+	else:
+		if roll < 0.45:
+			pickup.pickup_type = 0 # Type.HEALTH
+		elif roll < 0.72:
+			pickup.pickup_type = 1 # Type.SPEED
+		else:
+			pickup.pickup_type = 2 # Type.POWER
+	
+	get_parent().call_deferred("add_child", pickup)
 
 func _on_see_area_body_entered(body: Node2D) -> void:
 	if body.name == "player" or body is CharacterBody2D:

@@ -16,6 +16,19 @@ const PARRY_WINDOW: float = 0.22
 const ATTACK_ACTIVE_WINDOW: float = 0.16
 const ATTACK_MOVE_RESUME_WINDOW: float = 0.24
 
+# Out-of-combat Natural Regeneration
+const REGEN_DELAY: float = 4.5
+const REGEN_INTERVAL: float = 0.5
+const REGEN_AMOUNT: int = 2
+var time_since_last_damage: float = 0.0
+var regen_tick_timer: float = 0.0
+
+# Boosts and Modifiers
+var speed_boost_timer: float = 0.0
+var speed_multiplier: float = 1.0
+var damage_boost_timer: float = 0.0
+var damage_multiplier: float = 1.0
+
 @export var max_health: int = 100
 var health: int = max_health
 
@@ -26,6 +39,7 @@ var can_dodge = true
 var is_invulnerable: bool = false
 var is_dead: bool = false
 var damage_tween: Tween = null
+var buff_tint_timer: float = 0.0
 
 var attack_timer: float = 0.0
 var attack_can_cancel: bool = false
@@ -34,6 +48,7 @@ var dodge_buffered: bool = false
 var facing_direction: Vector2 = Vector2.DOWN
 var dodge_direction: Vector2 = Vector2.DOWN
 var block_start_time: float = 0.0
+@onready var camera: Camera2D = get_node_or_null("Camera2D")
 
 func _ready() -> void:
 	add_to_group("player")
@@ -45,6 +60,26 @@ func _physics_process(delta: float) -> void:
 	if is_dead:
 		return
 	
+	# Process active buffs
+	if speed_boost_timer > 0.0:
+		speed_boost_timer = maxf(0.0, speed_boost_timer - delta)
+		if speed_boost_timer == 0.0:
+			speed_multiplier = 1.0
+			
+	if damage_boost_timer > 0.0:
+		damage_boost_timer = maxf(0.0, damage_boost_timer - delta)
+		if damage_boost_timer == 0.0:
+			damage_multiplier = 1.0
+
+	# Natural Out-of-Combat Regeneration (heals when avoiding damage)
+	if health < max_health:
+		time_since_last_damage += delta
+		if time_since_last_damage >= REGEN_DELAY:
+			regen_tick_timer += delta
+			if regen_tick_timer >= REGEN_INTERVAL:
+				regen_tick_timer = 0.0
+				heal(REGEN_AMOUNT, false)
+
 	# Determine if player has movement control
 	var can_move := not isBlocking and not isDodging and (not isAttacking or attack_timer >= ATTACK_MOVE_RESUME_WINDOW)
 
@@ -100,16 +135,17 @@ func _physics_process(delta: float) -> void:
 		move_and_slide()
 		return
 	
-	# aply vel
+	# aply vel with active speed multiplier
+	var current_speed = SPEED * speed_multiplier
 	if direction_y:
-		velocity.y = direction_y * SPEED
+		velocity.y = direction_y * current_speed
 	else:
-		velocity.y = move_toward(velocity.y, 0, SPEED)
+		velocity.y = move_toward(velocity.y, 0, current_speed)
 		
 	if direction_x:
-		velocity.x = direction_x * SPEED
+		velocity.x = direction_x * current_speed
 	else:
-		velocity.x = move_toward(velocity.x, 0, SPEED)
+		velocity.x = move_toward(velocity.x, 0, current_speed)
 	
 	# walk and idle
 	if input_direction != Vector2.ZERO and not isAttacking and not isBlocking:
@@ -257,12 +293,18 @@ func take_damage(amount: int, attacker: Node2D = null) -> void:
 		if elapsed <= PARRY_WINDOW and attacker != null and attacker.has_method("stagger"):
 			print("PARRY! Attack deflected!")
 			_flash_parry()
+			shake_camera(5.0, 0.25)
 			attacker.stagger(1.2)
 			return
 		else:
 			print("Player blocked the attack!")
 			_flash_block()
+			shake_camera(2.5, 0.15)
 			return
+	
+	# Interrupt natural regeneration on taking damage
+	time_since_last_damage = 0.0
+	regen_tick_timer = 0.0
 	
 	health = max(0, health - amount)
 	print("Player took damage! Current health: ", health)
@@ -270,11 +312,64 @@ func take_damage(amount: int, attacker: Node2D = null) -> void:
 	if health_bar:
 		health_bar.set_health(health, max_health)
 	
+	shake_camera(4.5, 0.22)
+	
 	if health <= 0:
 		_die()
 	else:
 		_flash_red()
 		_trigger_damage_vignette(0.9)
+
+func heal(amount: int, show_flash: bool = true) -> void:
+	if is_dead:
+		return
+	var old_health = health
+	health = mini(max_health, health + amount)
+	if health_bar and health != old_health:
+		health_bar.set_health(health, max_health)
+	if show_flash:
+		_flash_heal()
+
+func apply_speed_boost(duration: float = 6.0, multiplier: float = 1.38) -> void:
+	speed_boost_timer = maxf(speed_boost_timer, duration)
+	speed_multiplier = multiplier
+	_flash_speed_buff()
+
+func apply_damage_boost(duration: float = 7.0, multiplier: float = 1.5) -> void:
+	damage_boost_timer = maxf(damage_boost_timer, duration)
+	damage_multiplier = multiplier
+	_flash_power_buff()
+
+func shake_camera(intensity: float = 4.0, duration: float = 0.2) -> void:
+	if not camera:
+		camera = get_node_or_null("Camera2D")
+	if not camera:
+		return
+	var tw = create_tween()
+	tw.tween_method(func(val: float):
+		camera.offset = Vector2(randf_range(-val, val), randf_range(-val, val))
+	, intensity, 0.0, duration).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+
+func _flash_heal() -> void:
+	if damage_tween and damage_tween.is_running():
+		damage_tween.kill()
+	player_animation.modulate = Color(0.4, 2.2, 0.6)
+	damage_tween = create_tween()
+	damage_tween.tween_property(player_animation, "modulate", Color.WHITE, 0.28)
+
+func _flash_speed_buff() -> void:
+	if damage_tween and damage_tween.is_running():
+		damage_tween.kill()
+	player_animation.modulate = Color(0.3, 1.8, 2.4)
+	damage_tween = create_tween()
+	damage_tween.tween_property(player_animation, "modulate", Color.WHITE, 0.3)
+
+func _flash_power_buff() -> void:
+	if damage_tween and damage_tween.is_running():
+		damage_tween.kill()
+	player_animation.modulate = Color(2.5, 1.8, 0.3)
+	damage_tween = create_tween()
+	damage_tween.tween_property(player_animation, "modulate", Color.WHITE, 0.3)
 
 func _trigger_damage_vignette(target_intensity: float = 0.9) -> void:
 	if not damage_vignette or not damage_vignette.material:
