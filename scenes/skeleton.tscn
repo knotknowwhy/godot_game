@@ -343,8 +343,9 @@ height = 14.0
 radius = 74.02702
 
 [node name="skeleton" type="CharacterBody2D"]
+z_index = 1
 collision_layer = 4096
-collision_mask = 4290
+collision_mask = 6338
 motion_mode = 1
 script = ExtResource("1_txkty")
 

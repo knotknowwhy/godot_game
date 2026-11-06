@@ -525,8 +525,9 @@ height = 10.0
 size = Vector2(13, 12)
 
 [node name="witch_doctor" type="CharacterBody2D"]
+z_index = 1
 collision_layer = 4096
-collision_mask = 4290
+collision_mask = 6338
 motion_mode = 1
 script = ExtResource("2_script")
 

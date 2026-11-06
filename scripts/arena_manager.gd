@@ -7,6 +7,7 @@ signal arena_completed
 
 @export var room_id: int = 1
 @export var door_node: Node2D
+@export var entrance_doors: Array[NodePath] = []
 @export var unlock_doors: Array[NodePath] = []
 @export var entities_container: Node
 @export var countdown_seconds: int = 3
@@ -68,7 +69,7 @@ func _configure_room() -> void:
 					"spawns": [
 						{"pos": Vector2(-70, -15), "type": "skeleton"},
 						{"pos": Vector2(85, -15), "type": "skeleton"},
-						{"pos": Vector2(8, 52), "type": "witch_doctor"}
+						{"pos": Vector2(8, 48), "type": "witch_doctor"}
 					]
 				}
 			]
@@ -76,13 +77,13 @@ func _configure_room() -> void:
 			countdown_seconds = 3
 			chest_spawn_pos = Vector2(4, -156)
 			chest_upgrade_id = 1
-			trigger_rect = Rect2(-155, -225, 295, 118)
+			trigger_rect = Rect2(-155, -225, 295, 105)
 			waves = [
 				{
 					"name": "Wave 1",
 					"spawns": [
-						{"pos": Vector2(-95, -135), "type": "skeleton"},
-						{"pos": Vector2(92, -135), "type": "skeleton"},
+						{"pos": Vector2(-95, -142), "type": "skeleton"},
+						{"pos": Vector2(92, -142), "type": "skeleton"},
 						{"pos": Vector2(4, -198), "type": "witch_doctor"}
 					]
 				},
@@ -91,7 +92,7 @@ func _configure_room() -> void:
 					"spawns": [
 						{"pos": Vector2(-102, -195), "type": "witch_doctor"},
 						{"pos": Vector2(96, -195), "type": "pyromancer"},
-						{"pos": Vector2(-40, -130), "type": "skeleton"}
+						{"pos": Vector2(-40, -142), "type": "skeleton"}
 					]
 				}
 			]
@@ -99,13 +100,13 @@ func _configure_room() -> void:
 			countdown_seconds = 3
 			chest_spawn_pos = Vector2(4, -346)
 			chest_upgrade_id = 2
-			trigger_rect = Rect2(-155, -418, 295, 132)
+			trigger_rect = Rect2(-155, -418, 295, 122)
 			waves = [
 				{
 					"name": "Wave 1",
 					"spawns": [
-						{"pos": Vector2(-98, -315), "type": "witch_doctor"},
-						{"pos": Vector2(92, -315), "type": "witch_doctor"},
+						{"pos": Vector2(-98, -322), "type": "witch_doctor"},
+						{"pos": Vector2(92, -322), "type": "witch_doctor"},
 						{"pos": Vector2(4, -390), "type": "skeleton"}
 					]
 				},
@@ -114,8 +115,8 @@ func _configure_room() -> void:
 					"spawns": [
 						{"pos": Vector2(-100, -390), "type": "pyromancer"},
 						{"pos": Vector2(96, -390), "type": "skeleton"},
-						{"pos": Vector2(-55, -310), "type": "skeleton"},
-						{"pos": Vector2(65, -310), "type": "witch_doctor"}
+						{"pos": Vector2(-55, -322), "type": "skeleton"},
+						{"pos": Vector2(65, -322), "type": "witch_doctor"}
 					]
 				}
 			]
@@ -123,13 +124,13 @@ func _configure_room() -> void:
 			countdown_seconds = 3
 			chest_spawn_pos = Vector2(392, -376)
 			chest_upgrade_id = 3
-			trigger_rect = Rect2(262, -450, 256, 138)
+			trigger_rect = Rect2(268, -450, 250, 134)
 			waves = [
 				{
 					"name": "Wave 1",
 					"spawns": [
-						{"pos": Vector2(305, -345), "type": "pyromancer"},
-						{"pos": Vector2(475, -345), "type": "pyromancer"},
+						{"pos": Vector2(305, -352), "type": "pyromancer"},
+						{"pos": Vector2(475, -352), "type": "pyromancer"},
 						{"pos": Vector2(392, -418), "type": "skeleton"}
 					]
 				},
@@ -138,8 +139,8 @@ func _configure_room() -> void:
 					"spawns": [
 						{"pos": Vector2(300, -420), "type": "pyromancer"},
 						{"pos": Vector2(480, -420), "type": "witch_doctor"},
-						{"pos": Vector2(345, -335), "type": "skeleton"},
-						{"pos": Vector2(440, -335), "type": "skeleton"}
+						{"pos": Vector2(345, -348), "type": "skeleton"},
+						{"pos": Vector2(440, -348), "type": "skeleton"}
 					]
 				}
 			]
@@ -151,7 +152,17 @@ func _physics_process(_delta: float) -> void:
 	if player and is_instance_valid(player):
 		if trigger_rect.has_point(player.global_position):
 			has_triggered = true
+			_lock_entrance_doors()
 			_start_wave_intro(current_wave_index)
+
+func _lock_entrance_doors() -> void:
+	for d_path in entrance_doors:
+		var d = get_node_or_null(d_path)
+		if d:
+			if "is_locked" in d:
+				d.is_locked = true
+			if d.has_method("close_door"):
+				d.close_door()
 
 func _start_wave_intro(wave_idx: int) -> void:
 	is_arena_active = true
@@ -247,6 +258,12 @@ func _on_all_waves_cleared() -> void:
 	
 	# Spawn Loot Chest with permanent character upgrade
 	_spawn_loot_chest()
+	
+	# Re-open any entrance doors that locked when the encounter began
+	for d_path in entrance_doors:
+		var d = get_node_or_null(d_path)
+		if d and d.has_method("open_door"):
+			d.open_door()
 	
 	# Open primary room exit door
 	if door_node and door_node.has_method("open_door"):

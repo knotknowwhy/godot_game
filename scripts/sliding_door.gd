@@ -11,29 +11,45 @@ signal door_closed
 @export var slide_duration: float = 1.0
 @export var is_open: bool = false
 @export var open_on_proximity: bool = false
-@export var proximity_radius: float = 30.0
+@export var proximity_radius: float = 38.0
 @export var is_locked: bool = false
 @export var mist_nodes: Array[NodePath] = []
 
 var tween: Tween = null
+var initial_sprite_y: float = 18.0
+var pulse_timer: float = 0.0
 
 func _ready() -> void:
 	_ensure_references()
+	if door_sprite:
+		initial_sprite_y = door_sprite.position.y
 	if is_open:
 		if door_sprite:
-			door_sprite.position.y = 18.0 - slide_distance
+			door_sprite.position.y = initial_sprite_y - slide_distance
 		if collision_shape:
 			collision_shape.set_deferred("disabled", true)
 		_reveal_mist(true)
 	else:
 		if door_sprite:
-			door_sprite.position.y = 18.0
+			door_sprite.position.y = initial_sprite_y
 		if collision_shape:
 			collision_shape.set_deferred("disabled", false)
 
-func _physics_process(_delta: float) -> void:
-	if is_open or not open_on_proximity or is_locked:
+func _physics_process(delta: float) -> void:
+	if is_open:
 		return
+	
+	# Subtle golden invitation shimmer when a proximity gate is unlocked and ready to open
+	if open_on_proximity and not is_locked and door_sprite:
+		pulse_timer += delta * 4.0
+		var g = 1.0 + (sin(pulse_timer) * 0.5 + 0.5) * 0.35
+		door_sprite.modulate = Color(g * 1.1, g * 1.05, 1.0)
+	elif door_sprite:
+		door_sprite.modulate = Color.WHITE
+	
+	if not open_on_proximity or is_locked:
+		return
+	
 	var player = get_tree().get_first_node_in_group("player")
 	if player and is_instance_valid(player):
 		var door_center = global_position + (collision_shape.position if collision_shape else Vector2.ZERO)
@@ -74,19 +90,19 @@ func open_door() -> void:
 	is_open = true
 	is_locked = false
 	_ensure_references()
+	if door_sprite:
+		door_sprite.modulate = Color.WHITE
 	_reveal_mist(false)
 	
 	if tween and tween.is_running():
 		tween.kill()
 	
-	# Disable collision so player can pass through
 	if collision_shape:
 		collision_shape.set_deferred("disabled", true)
 	
-	# Smooth mechanical sliding animation
 	if door_sprite and is_inside_tree():
 		tween = create_tween()
-		tween.tween_property(door_sprite, "position:y", 18.0 - slide_distance, slide_duration)\
+		tween.tween_property(door_sprite, "position:y", initial_sprite_y - slide_distance, slide_duration)\
 			.set_trans(Tween.TRANS_QUAD)\
 			.set_ease(Tween.EASE_OUT)
 		
@@ -97,7 +113,7 @@ func open_door() -> void:
 		)
 	else:
 		if door_sprite:
-			door_sprite.position.y = 18.0 - slide_distance
+			door_sprite.position.y = initial_sprite_y - slide_distance
 		door_opened.emit()
 
 func close_door() -> void:
@@ -111,7 +127,7 @@ func close_door() -> void:
 		
 	if door_sprite and is_inside_tree():
 		tween = create_tween()
-		tween.tween_property(door_sprite, "position:y", 18.0, 0.5)\
+		tween.tween_property(door_sprite, "position:y", initial_sprite_y, 0.5)\
 			.set_trans(Tween.TRANS_BOUNCE)\
 			.set_ease(Tween.EASE_OUT)
 		tween.tween_callback(func():
@@ -121,7 +137,7 @@ func close_door() -> void:
 		)
 	else:
 		if door_sprite:
-			door_sprite.position.y = 18.0
+			door_sprite.position.y = initial_sprite_y
 		if collision_shape:
 			collision_shape.set_deferred("disabled", false)
 		door_closed.emit()

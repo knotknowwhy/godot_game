@@ -74,6 +74,24 @@ size = Vector2(281, 5.5)
 custom_solver_bias = 0.089
 points = PackedVector2Array(-340, -68, -338, -64, -333, -64, -331, -103, -372, -102, -371, -64, -365, -64, -365, -68)
 
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_enemy_south_room1"]
+size = Vector2(320, 48)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_enemy_div_left"]
+size = Vector2(144, 48)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_enemy_div_right"]
+size = Vector2(112, 48)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_enemy_r4_left"]
+size = Vector2(196, 48)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_enemy_r4_right"]
+size = Vector2(36, 48)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_enemy_south_boss"]
+size = Vector2(284, 48)
+
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_inter_fade_trigger"]
 size = Vector2(304, 48)
 
@@ -226,6 +244,42 @@ shape = SubResource("RectangleShape2D_n07xf")
 position = Vector2(744, -154)
 shape = SubResource("ConvexPolygonShape2D_xa3n1")
 
+[node name="enemy_south_wall_blockers" type="StaticBody2D" parent="world before player render"]
+collision_layer = 2048
+collision_mask = 0
+
+[node name="enemy_room1_south" type="CollisionShape2D" parent="world before player render/enemy_south_wall_blockers"]
+position = Vector2(-8, 104)
+shape = SubResource("RectangleShape2D_enemy_south_room1")
+
+[node name="enemy_room2_south_left" type="CollisionShape2D" parent="world before player render/enemy_south_wall_blockers"]
+position = Vector2(-96, -72)
+shape = SubResource("RectangleShape2D_enemy_div_left")
+
+[node name="enemy_room2_south_right" type="CollisionShape2D" parent="world before player render/enemy_south_wall_blockers"]
+position = Vector2(92, -72)
+shape = SubResource("RectangleShape2D_enemy_div_right")
+
+[node name="enemy_room3_south_left" type="CollisionShape2D" parent="world before player render/enemy_south_wall_blockers"]
+position = Vector2(-96, -248)
+shape = SubResource("RectangleShape2D_enemy_div_left")
+
+[node name="enemy_room3_south_right" type="CollisionShape2D" parent="world before player render/enemy_south_wall_blockers"]
+position = Vector2(92, -248)
+shape = SubResource("RectangleShape2D_enemy_div_right")
+
+[node name="enemy_room4_south_left" type="CollisionShape2D" parent="world before player render/enemy_south_wall_blockers"]
+position = Vector2(350, -280)
+shape = SubResource("RectangleShape2D_enemy_r4_left")
+
+[node name="enemy_room4_south_right" type="CollisionShape2D" parent="world before player render/enemy_south_wall_blockers"]
+position = Vector2(514, -280)
+shape = SubResource("RectangleShape2D_enemy_r4_right")
+
+[node name="enemy_boss_south" type="CollisionShape2D" parent="world before player render/enemy_south_wall_blockers"]
+position = Vector2(394, -56)
+shape = SubResource("RectangleShape2D_enemy_south_boss")
+
 [node name="enviroment" type="Node" parent="." unique_id=330309572]
 
 [node name="player" type="Node" parent="." unique_id=1716847528]
@@ -235,6 +289,8 @@ position = Vector2(-25, -3)
 
 [node name="Camera2D" type="Camera2D" parent="player/player" unique_id=333743134]
 zoom = Vector2(4.98, 4.98)
+
+[node name="entities" type="Node" parent="." unique_id=896023218]
 
 [node name="world after player render" type="Node" parent="." unique_id=745768844]
 
@@ -384,8 +440,6 @@ position = Vector2(-43, -72)
 [node name="spikes2" parent="traps/spikes" unique_id=2112732714 instance=ExtResource("4_lbhrr")]
 position = Vector2(57, -36)
 
-[node name="entities" type="Node" parent="." unique_id=896023218]
-
 [node name="darkness_mists" type="Node2D" parent="."]
 z_index = 10
 
@@ -393,26 +447,35 @@ z_index = 10
 material = SubResource("ShaderMaterial_mist")
 offset_left = -176.0
 offset_top = -244.0
-offset_right = 148.0
-offset_bottom = -62.0
+offset_right = 176.0
+offset_bottom = -96.0
 mouse_filter = 2
 color = Color(0.02, 0.02, 0.04, 1)
 
 [node name="mist_hallway1" type="ColorRect" parent="darkness_mists"]
 material = SubResource("ShaderMaterial_mist")
-offset_left = 148.0
+offset_left = 176.0
 offset_top = -212.0
-offset_right = 250.0
+offset_right = 236.0
 offset_bottom = -92.0
 mouse_filter = 2
 color = Color(0.02, 0.02, 0.04, 1)
 
 [node name="mist_boss_room" type="ColorRect" parent="darkness_mists"]
 material = SubResource("ShaderMaterial_mist")
-offset_left = 250.0
-offset_top = -274.0
+offset_left = 256.0
+offset_top = -256.0
 offset_right = 538.0
 offset_bottom = -30.0
+mouse_filter = 2
+color = Color(0.02, 0.02, 0.04, 1)
+
+[node name="mist_room4_boss_wall" type="ColorRect" parent="darkness_mists"]
+material = SubResource("ShaderMaterial_mist")
+offset_left = 256.0
+offset_top = -304.0
+offset_right = 538.0
+offset_bottom = -256.0
 mouse_filter = 2
 color = Color(0.02, 0.02, 0.04, 1)
 
@@ -420,26 +483,26 @@ color = Color(0.02, 0.02, 0.04, 1)
 material = SubResource("ShaderMaterial_mist")
 offset_left = -176.0
 offset_top = -464.0
-offset_right = 148.0
-offset_bottom = -240.0
+offset_right = 176.0
+offset_bottom = -272.0
 mouse_filter = 2
 color = Color(0.02, 0.02, 0.04, 1)
 
 [node name="mist_hallway2" type="ColorRect" parent="darkness_mists"]
 material = SubResource("ShaderMaterial_mist")
-offset_left = 148.0
+offset_left = 176.0
 offset_top = -404.0
-offset_right = 250.0
+offset_right = 236.0
 offset_bottom = -284.0
 mouse_filter = 2
 color = Color(0.02, 0.02, 0.04, 1)
 
 [node name="mist_room4" type="ColorRect" parent="darkness_mists"]
 material = SubResource("ShaderMaterial_mist")
-offset_left = 250.0
+offset_left = 256.0
 offset_top = -496.0
 offset_right = 538.0
-offset_bottom = -270.0
+offset_bottom = -304.0
 mouse_filter = 2
 color = Color(0.02, 0.02, 0.04, 1)
 
@@ -450,44 +513,44 @@ mist_nodes = Array[NodePath]([NodePath("../darkness_mists/mist_room2")])
 [node name="room2_north_door" parent="." instance=ExtResource("6_door")]
 position = Vector2(8, -240)
 open_on_proximity = true
-proximity_radius = 34.0
+proximity_radius = 38.0
 is_locked = true
 mist_nodes = Array[NodePath]([NodePath("../darkness_mists/mist_room3")])
 
 [node name="room4_south_door" parent="." instance=ExtResource("6_door")]
 position = Vector2(472, -272)
 open_on_proximity = true
-proximity_radius = 34.0
+proximity_radius = 38.0
 is_locked = true
 mist_nodes = Array[NodePath]([NodePath("../darkness_mists/mist_boss_room")])
 
 [node name="hallway1_west_door" parent="." instance=ExtResource("8_side_door")]
-position = Vector2(152, -144)
+position = Vector2(166, -144)
 open_on_proximity = true
-proximity_radius = 28.0
+proximity_radius = 42.0
 is_locked = true
 mist_nodes = Array[NodePath]([NodePath("../darkness_mists/mist_hallway1")])
 
 [node name="hallway1_east_door" parent="." instance=ExtResource("8_side_door")]
-position = Vector2(248, -144)
+position = Vector2(236, -144)
 open_on_proximity = true
-proximity_radius = 28.0
+proximity_radius = 42.0
 is_locked = false
-mist_nodes = Array[NodePath]([NodePath("../darkness_mists/mist_boss_room")])
+mist_nodes = Array[NodePath]([NodePath("../darkness_mists/mist_boss_room"), NodePath("../darkness_mists/mist_room4_boss_wall")])
 
 [node name="hallway2_west_door" parent="." instance=ExtResource("8_side_door")]
-position = Vector2(152, -336)
+position = Vector2(166, -336)
 open_on_proximity = true
-proximity_radius = 28.0
+proximity_radius = 42.0
 is_locked = true
 mist_nodes = Array[NodePath]([NodePath("../darkness_mists/mist_hallway2")])
 
 [node name="hallway2_east_door" parent="." instance=ExtResource("8_side_door")]
-position = Vector2(248, -336)
+position = Vector2(236, -336)
 open_on_proximity = true
-proximity_radius = 28.0
+proximity_radius = 42.0
 is_locked = false
-mist_nodes = Array[NodePath]([NodePath("../darkness_mists/mist_room4")])
+mist_nodes = Array[NodePath]([NodePath("../darkness_mists/mist_room4"), NodePath("../darkness_mists/mist_room4_boss_wall")])
 
 [node name="arena_manager" parent="." unique_id=1127219856 node_paths=PackedStringArray("door_node", "entities_container") instance=ExtResource("7_arena")]
 room_id = 1
@@ -497,16 +560,19 @@ entities_container = NodePath("../entities")
 [node name="arena_manager_room2" parent="." node_paths=PackedStringArray("door_node", "entities_container") instance=ExtResource("7_arena")]
 room_id = 2
 door_node = NodePath("../room2_north_door")
+entrance_doors = Array[NodePath]([NodePath("../sliding_door")])
 unlock_doors = Array[NodePath]([NodePath("../hallway1_west_door"), NodePath("../room2_north_door")])
 entities_container = NodePath("../entities")
 
 [node name="arena_manager_room3" parent="." node_paths=PackedStringArray("entities_container") instance=ExtResource("7_arena")]
 room_id = 3
+entrance_doors = Array[NodePath]([NodePath("../room2_north_door")])
 unlock_doors = Array[NodePath]([NodePath("../hallway2_west_door")])
 entities_container = NodePath("../entities")
 
 [node name="arena_manager_room4" parent="." node_paths=PackedStringArray("door_node", "entities_container") instance=ExtResource("7_arena")]
 room_id = 4
 door_node = NodePath("../room4_south_door")
+entrance_doors = Array[NodePath]([NodePath("../hallway2_east_door")])
 unlock_doors = Array[NodePath]([NodePath("../room4_south_door")])
 entities_container = NodePath("../entities")

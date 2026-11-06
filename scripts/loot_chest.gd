@@ -1,4 +1,4 @@
-extends Area2D
+extends StaticBody2D
 
 signal chest_opened(upgrade_id: int)
 
@@ -7,6 +7,7 @@ var is_opened: bool = false
 var elapsed: float = 0.0
 
 @onready var sprite: Sprite2D = $Sprite2D
+@onready var interact_area: Area2D = $interact_area
 const FLOATING_TEXT_SCENE = preload("res://scenes/floating_text.tscn")
 
 func _ready() -> void:
@@ -21,8 +22,9 @@ func _ready() -> void:
 	tw.tween_property(self, "scale", Vector2.ONE, 0.4).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 	tw.tween_property(self, "modulate", Color.WHITE, 0.4)
 	
-	body_entered.connect(_on_body_entered)
-	area_entered.connect(_on_area_entered)
+	if interact_area:
+		interact_area.body_entered.connect(_on_body_entered)
+		interact_area.area_entered.connect(_on_area_entered)
 
 func _physics_process(delta: float) -> void:
 	if is_opened:
@@ -34,7 +36,7 @@ func _physics_process(delta: float) -> void:
 	
 	var player = get_tree().get_first_node_in_group("player")
 	if player and is_instance_valid(player):
-		if global_position.distance_to(player.global_position) <= 22.0:
+		if global_position.distance_to(player.global_position) <= 24.0:
 			_open_chest(player)
 
 func _on_body_entered(body: Node2D) -> void:
