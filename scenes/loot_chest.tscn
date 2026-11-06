@@ -4,13 +4,13 @@
 [ext_resource type="Texture2D" uid="uid://xxmapap0t68b" path="res://assets/sprites/loot_chest.png" id="2_chest_tex"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_solid_chest"]
-size = Vector2(22, 16)
+size = Vector2(28, 30)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_interact_chest"]
-size = Vector2(30, 24)
+size = Vector2(38, 42)
 
 [node name="loot_chest" type="StaticBody2D"]
-z_index = 1
+z_index = 0
 collision_layer = 193
 collision_mask = 0
 script = ExtResource("1_chest_script")
@@ -20,7 +20,7 @@ texture = ExtResource("2_chest_tex")
 hframes = 2
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
-position = Vector2(0, 3)
+position = Vector2(0, -7)
 shape = SubResource("RectangleShape2D_solid_chest")
 
 [node name="interact_area" type="Area2D" parent="."]
@@ -28,5 +28,5 @@ collision_layer = 0
 collision_mask = 6
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="interact_area"]
-position = Vector2(0, 2)
+position = Vector2(0, -3)
 shape = SubResource("RectangleShape2D_interact_chest")

@@ -6,8 +6,11 @@
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_door"]
 size = Vector2(48, 16)
 
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_fade_trigger"]
+size = Vector2(48, 44)
+
 [node name="sliding_door" type="StaticBody2D"]
-z_index = 1
+z_index = 2
 collision_layer = 193
 collision_mask = 0
 script = ExtResource("1_door_script")
@@ -29,3 +32,11 @@ texture = ExtResource("2_door_tex")
 [node name="collision_shape" type="CollisionShape2D" parent="."]
 position = Vector2(0, 16)
 shape = SubResource("RectangleShape2D_door")
+
+[node name="fade_trigger" type="Area2D" parent="."]
+collision_layer = 0
+collision_mask = 4098
+
+[node name="trigger_shape" type="CollisionShape2D" parent="fade_trigger"]
+position = Vector2(0, -2)
+shape = SubResource("RectangleShape2D_fade_trigger")

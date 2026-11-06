@@ -36,7 +36,7 @@ func _physics_process(delta: float) -> void:
 	
 	var player = get_tree().get_first_node_in_group("player")
 	if player and is_instance_valid(player):
-		if global_position.distance_to(player.global_position) <= 24.0:
+		if global_position.distance_to(player.global_position) <= 32.0:
 			_open_chest(player)
 
 func _on_body_entered(body: Node2D) -> void:

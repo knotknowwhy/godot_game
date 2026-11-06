@@ -300,7 +300,7 @@ tile_set = ExtResource("1_lnu2h")
 
 [node name="room4_boss_fade_trigger" type="Area2D" parent="world after player render"]
 collision_layer = 0
-collision_mask = 2
+collision_mask = 4098
 script = ExtResource("3_fade")
 target_wall_path = NodePath("../foreground_room4_boss_wall")
 
@@ -323,7 +323,7 @@ tile_set = ExtResource("1_lnu2h")
 
 [node name="intermediary_fade_trigger" type="Area2D" parent="world after player render" unique_id=1148902371]
 collision_layer = 0
-collision_mask = 2
+collision_mask = 4098
 script = ExtResource("3_fade")
 target_wall_path = NodePath("../foreground_intermediary_wall")
 
@@ -337,7 +337,7 @@ tile_set = ExtResource("1_lnu2h")
 
 [node name="room2_3_fade_trigger" type="Area2D" parent="world after player render"]
 collision_layer = 0
-collision_mask = 2
+collision_mask = 4098
 script = ExtResource("3_fade")
 target_wall_path = NodePath("../foreground_room2_3_wall")
 
@@ -362,7 +362,7 @@ tile_set = ExtResource("1_lnu2h")
 [node name="south_fade_trigger" type="Area2D" parent="world after player render" unique_id=168970829]
 position = Vector2(20, -1)
 collision_layer = 0
-collision_mask = 2
+collision_mask = 4098
 script = ExtResource("3_fade")
 target_wall_path = NodePath("../foreground_south_wall")
 
@@ -383,7 +383,7 @@ tile_set = ExtResource("1_lnu2h")
 [node name="tunnel_fade_trigger" type="Area2D" parent="world after player render" unique_id=1965529401 node_paths=PackedStringArray("target_wall")]
 position = Vector2(24, -15)
 collision_layer = 0
-collision_mask = 2
+collision_mask = 4098
 script = ExtResource("3_fade")
 target_wall = NodePath("../foreground_tun1_southwall")
 
@@ -404,7 +404,7 @@ tile_set = ExtResource("1_lnu2h")
 [node name="tunnel2_fade_trigger" type="Area2D" parent="world after player render" node_paths=PackedStringArray("target_wall")]
 position = Vector2(24, -207)
 collision_layer = 0
-collision_mask = 2
+collision_mask = 4098
 script = ExtResource("3_fade")
 target_wall = NodePath("../foreground_tun2_southwall")
 
@@ -418,7 +418,7 @@ tile_set = ExtResource("1_lnu2h")
 
 [node name="south_boss_fade_trigger" type="Area2D" parent="world after player render" unique_id=1162957358 node_paths=PackedStringArray("target_wall")]
 collision_layer = 0
-collision_mask = 2
+collision_mask = 4098
 script = ExtResource("3_fade")
 target_wall = NodePath("../south_boss_foregroun")
 

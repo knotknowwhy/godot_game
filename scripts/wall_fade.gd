@@ -18,7 +18,7 @@ var _targets: Array[CanvasItem] = []
 var _original_z: Dictionary = {}
 var _mat: ShaderMaterial
 var _tween: Tween
-var _player: Node2D = null
+var _inside_bodies: Array[Node2D] = []
 var _is_player_inside: bool = false
 var _current_fade: float = 0.0
 
@@ -89,23 +89,44 @@ func _collect_child_layers(node: Node, result: Array[CanvasItem]) -> void:
 			_collect_child_layers(child, result)
 
 func _process(_delta: float) -> void:
-	if _is_player_inside and _player != null and _mat != null:
-		_mat.set_shader_parameter("player_pos", _player.global_position)
+	if _is_player_inside and _mat != null:
+		var focus_pos = Vector2.ZERO
+		var player = null
+		for b in _inside_bodies:
+			if is_instance_valid(b) and (b.is_in_group("player") or b.name == "player"):
+				player = b
+				break
+		if player != null:
+			focus_pos = player.global_position
+		else:
+			_inside_bodies = _inside_bodies.filter(func(b): return is_instance_valid(b))
+			if not _inside_bodies.is_empty():
+				focus_pos = _inside_bodies[0].global_position
+		if focus_pos != Vector2.ZERO:
+			_mat.set_shader_parameter("player_pos", focus_pos)
 
 func _on_body_entered(body: Node2D) -> void:
-	if body is CharacterBody2D or body.is_in_group("player"):
+	if body is CharacterBody2D or body.is_in_group("player") or body.is_in_group("enemies"):
+		if not _inside_bodies.has(body):
+			_inside_bodies.append(body)
+		_update_fade_state()
+
+func _on_body_exited(body: Node2D) -> void:
+	if _inside_bodies.has(body):
+		_inside_bodies.erase(body)
+	_update_fade_state()
+
+func _update_fade_state() -> void:
+	_inside_bodies = _inside_bodies.filter(func(b): return is_instance_valid(b))
+	if not _inside_bodies.is_empty():
 		_is_player_inside = true
-		_player = body
-		# Boost top-level targets to foreground (children with relative z follow automatically)
 		for target in _targets:
 			if target != null:
 				var p = target.get_parent() as CanvasItem
 				if p == null or not _targets.has(p):
 					target.z_index = _original_z.get(target, 0) + 2
 		_fade_to(1.0)
-
-func _on_body_exited(body: Node2D) -> void:
-	if body is CharacterBody2D or body.is_in_group("player"):
+	else:
 		_is_player_inside = false
 		_fade_to(0.0)
 
