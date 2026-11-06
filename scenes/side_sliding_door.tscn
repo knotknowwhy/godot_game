@@ -1,34 +1,34 @@
-[gd_scene format=3]
+[gd_scene format=3 uid="uid://c6f3m2qf5k4e1"]
 
 [ext_resource type="Script" path="res://scripts/sliding_door.gd" id="1_door_script"]
 [ext_resource type="Texture2D" uid="uid://bsk7qwkvobpxy" path="res://assets/sprites/portcullis_side_door.png" id="2_side_door_tex"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_side_door"]
-size = Vector2(16, 36)
+size = Vector2(16, 64)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_side_fade_trigger"]
-size = Vector2(36, 44)
+size = Vector2(36, 68)
 
 [node name="side_sliding_door" type="StaticBody2D"]
 z_index = 2
 collision_layer = 193
 collision_mask = 0
 script = ExtResource("1_door_script")
-slide_distance = 40.0
+slide_distance = 64.0
 slide_duration = 0.85
 
 [node name="door_slot" type="Control" parent="."]
 clip_contents = true
-custom_minimum_size = Vector2(20, 40)
+custom_minimum_size = Vector2(20, 64)
 layout_mode = 3
 anchors_preset = 0
 offset_left = -10.0
-offset_top = -20.0
+offset_top = -32.0
 offset_right = 10.0
-offset_bottom = 20.0
+offset_bottom = 32.0
 
 [node name="door_sprite" type="Sprite2D" parent="door_slot"]
-position = Vector2(10, 20)
+position = Vector2(10, 32)
 texture = ExtResource("2_side_door_tex")
 
 [node name="collision_shape" type="CollisionShape2D" parent="."]

@@ -454,10 +454,10 @@ color = Color(0.02, 0.02, 0.04, 1)
 
 [node name="mist_hallway1" type="ColorRect" parent="darkness_mists"]
 material = SubResource("ShaderMaterial_mist")
-offset_left = 176.0
-offset_top = -212.0
-offset_right = 236.0
-offset_bottom = -92.0
+offset_left = 152.0
+offset_top = -160.0
+offset_right = 244.0
+offset_bottom = -96.0
 mouse_filter = 2
 color = Color(0.02, 0.02, 0.04, 1)
 
@@ -490,10 +490,10 @@ color = Color(0.02, 0.02, 0.04, 1)
 
 [node name="mist_hallway2" type="ColorRect" parent="darkness_mists"]
 material = SubResource("ShaderMaterial_mist")
-offset_left = 176.0
-offset_top = -404.0
-offset_right = 236.0
-offset_bottom = -284.0
+offset_left = 152.0
+offset_top = -352.0
+offset_right = 244.0
+offset_bottom = -288.0
 mouse_filter = 2
 color = Color(0.02, 0.02, 0.04, 1)
 
@@ -525,30 +525,30 @@ is_locked = true
 mist_nodes = Array[NodePath]([NodePath("../darkness_mists/mist_boss_room")])
 
 [node name="hallway1_west_door" parent="." instance=ExtResource("8_side_door")]
-position = Vector2(166, -144)
+position = Vector2(152, -128)
 open_on_proximity = true
-proximity_radius = 42.0
+proximity_radius = 36.0
 is_locked = true
 mist_nodes = Array[NodePath]([NodePath("../darkness_mists/mist_hallway1")])
 
 [node name="hallway1_east_door" parent="." instance=ExtResource("8_side_door")]
-position = Vector2(236, -144)
+position = Vector2(244, -128)
 open_on_proximity = true
-proximity_radius = 42.0
+proximity_radius = 36.0
 is_locked = false
 mist_nodes = Array[NodePath]([NodePath("../darkness_mists/mist_boss_room"), NodePath("../darkness_mists/mist_room4_boss_wall")])
 
 [node name="hallway2_west_door" parent="." instance=ExtResource("8_side_door")]
-position = Vector2(166, -336)
+position = Vector2(152, -320)
 open_on_proximity = true
-proximity_radius = 42.0
+proximity_radius = 36.0
 is_locked = true
 mist_nodes = Array[NodePath]([NodePath("../darkness_mists/mist_hallway2")])
 
 [node name="hallway2_east_door" parent="." instance=ExtResource("8_side_door")]
-position = Vector2(236, -336)
+position = Vector2(244, -320)
 open_on_proximity = true
-proximity_radius = 42.0
+proximity_radius = 36.0
 is_locked = false
 mist_nodes = Array[NodePath]([NodePath("../darkness_mists/mist_room4"), NodePath("../darkness_mists/mist_room4_boss_wall")])
 
@@ -562,12 +562,14 @@ room_id = 2
 door_node = NodePath("../room2_north_door")
 entrance_doors = Array[NodePath]([NodePath("../sliding_door")])
 unlock_doors = Array[NodePath]([NodePath("../hallway1_west_door"), NodePath("../room2_north_door")])
+lock_during_waves = Array[NodePath]([NodePath("../hallway1_west_door")])
 entities_container = NodePath("../entities")
 
 [node name="arena_manager_room3" parent="." node_paths=PackedStringArray("entities_container") instance=ExtResource("7_arena")]
 room_id = 3
 entrance_doors = Array[NodePath]([NodePath("../room2_north_door")])
 unlock_doors = Array[NodePath]([NodePath("../hallway2_west_door")])
+lock_during_waves = Array[NodePath]([NodePath("../hallway2_west_door")])
 entities_container = NodePath("../entities")
 
 [node name="arena_manager_room4" parent="." node_paths=PackedStringArray("door_node", "entities_container") instance=ExtResource("7_arena")]
@@ -575,4 +577,5 @@ room_id = 4
 door_node = NodePath("../room4_south_door")
 entrance_doors = Array[NodePath]([NodePath("../hallway2_east_door")])
 unlock_doors = Array[NodePath]([NodePath("../room4_south_door")])
+lock_during_waves = Array[NodePath]([NodePath("../room4_south_door")])
 entities_container = NodePath("../entities")

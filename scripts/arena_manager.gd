@@ -9,6 +9,7 @@ signal arena_completed
 @export var door_node: Node2D
 @export var entrance_doors: Array[NodePath] = []
 @export var unlock_doors: Array[NodePath] = []
+@export var lock_during_waves: Array[NodePath] = []
 @export var entities_container: Node
 @export var countdown_seconds: int = 3
 @export var wave_intermission_seconds: float = 1.6
@@ -46,6 +47,7 @@ func _ready() -> void:
 	
 	if room_id == 1:
 		has_triggered = true
+		_lock_all_room_doors()
 		get_tree().create_timer(0.8).timeout.connect(func():
 			_start_wave_intro(current_wave_index)
 		)
@@ -152,17 +154,35 @@ func _physics_process(_delta: float) -> void:
 	if player and is_instance_valid(player):
 		if trigger_rect.has_point(player.global_position):
 			has_triggered = true
-			_lock_entrance_doors()
+			_lock_all_room_doors()
 			_start_wave_intro(current_wave_index)
 
-func _lock_entrance_doors() -> void:
-	for d_path in entrance_doors:
+func _lock_all_room_doors() -> void:
+	var door_paths: Array = []
+	for p in entrance_doors:
+		if p not in door_paths:
+			door_paths.append(p)
+	for p in unlock_doors:
+		if p not in door_paths:
+			door_paths.append(p)
+	for p in lock_during_waves:
+		if p not in door_paths:
+			door_paths.append(p)
+	if door_node:
+		var np = door_node.get_path()
+		if np not in door_paths:
+			door_paths.append(np)
+	
+	for d_path in door_paths:
 		var d = get_node_or_null(d_path)
-		if d:
-			if "is_locked" in d:
-				d.is_locked = true
-			if d.has_method("close_door"):
-				d.close_door()
+		if d and is_instance_valid(d):
+			if d.has_method("lock_and_close"):
+				d.lock_and_close()
+			else:
+				if "is_locked" in d:
+					d.is_locked = true
+				if d.has_method("close_door"):
+					d.close_door()
 
 func _start_wave_intro(wave_idx: int) -> void:
 	is_arena_active = true
@@ -262,18 +282,25 @@ func _on_all_waves_cleared() -> void:
 	# Re-open any entrance doors that locked when the encounter began
 	for d_path in entrance_doors:
 		var d = get_node_or_null(d_path)
-		if d and d.has_method("open_door"):
-			d.open_door()
+		if d and is_instance_valid(d):
+			if d.has_method("unlock_door"):
+				d.unlock_door()
+			if d.has_method("open_door"):
+				d.open_door()
 	
 	# Open primary room exit door
-	if door_node and door_node.has_method("open_door"):
-		door_node.open_door()
+	if door_node and is_instance_valid(door_node):
+		if door_node.has_method("unlock_door"):
+			door_node.unlock_door()
+		if door_node.has_method("open_door"):
+			door_node.open_door()
 	
 	# Unlock any proximity hallway doors connected to this room
 	for d_path in unlock_doors:
 		var d = get_node_or_null(d_path)
-		if d and d.has_method("unlock_door"):
-			d.unlock_door()
+		if d and is_instance_valid(d):
+			if d.has_method("unlock_door"):
+				d.unlock_door()
 	
 	_pop_text("Room Cleared! Chest Spawned!", Color(1.0, 0.9, 0.4), 26, 2.0, func():
 		_fade_out_announcement()

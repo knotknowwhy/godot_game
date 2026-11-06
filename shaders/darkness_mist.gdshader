@@ -40,10 +40,10 @@ void fragment() {
 	
 	vec3 col = mix(base_color.rgb, mist_highlight.rgb, mist * 0.55);
 	
-	// Softly feather the outer 3% border so adjacent mist regions blend seamlessly
-	float edge_x = smoothstep(0.0, 0.03, UV.x) * smoothstep(0.0, 0.03, 1.0 - UV.x);
-	float edge_y = smoothstep(0.0, 0.03, UV.y) * smoothstep(0.0, 0.03, 1.0 - UV.y);
-	float edge_alpha = mix(0.92, 1.0, edge_x * edge_y);
+	// Softly feather the edges so mist blends smoothly into dungeon corridors
+	float edge_x = smoothstep(0.0, 0.06, UV.x) * smoothstep(0.0, 0.06, 1.0 - UV.x);
+	float edge_y = smoothstep(0.0, 0.06, UV.y) * smoothstep(0.0, 0.06, 1.0 - UV.y);
+	float edge_alpha = edge_x * edge_y;
 	
 	COLOR = vec4(col, base_color.a * density * edge_alpha * COLOR.a);
 }

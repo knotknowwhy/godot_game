@@ -133,8 +133,18 @@ func _physics_process(delta: float) -> void:
 		if door_center.distance_to(p.global_position) <= proximity_radius:
 			open_door()
 
+func lock_door() -> void:
+	is_locked = true
+
 func unlock_door() -> void:
 	is_locked = false
+
+func lock_and_close() -> void:
+	is_locked = true
+	_ensure_references()
+	if collision_shape:
+		collision_shape.set_deferred("disabled", false)
+	close_door()
 
 func _ensure_references() -> void:
 	if not door_slot:
@@ -199,18 +209,24 @@ func open_door() -> void:
 		door_opened.emit()
 
 func close_door() -> void:
-	if not is_open:
-		return
-	is_open = false
 	_ensure_references()
 	z_index = 2
+	if collision_shape:
+		collision_shape.set_deferred("disabled", false)
+	
+	if not is_open:
+		if door_sprite:
+			door_sprite.position.y = initial_sprite_y
+		_update_fade_state()
+		return
+	is_open = false
 	
 	if tween and tween.is_running():
 		tween.kill()
 		
 	if door_sprite and is_inside_tree():
 		tween = create_tween()
-		tween.tween_property(door_sprite, "position:y", initial_sprite_y, 0.5)\
+		tween.tween_property(door_sprite, "position:y", initial_sprite_y, 0.45)\
 			.set_trans(Tween.TRANS_BOUNCE)\
 			.set_ease(Tween.EASE_OUT)
 		tween.tween_callback(func():
