@@ -1,32 +1,31 @@
-[gd_scene format=3]
+[gd_scene format=3 uid="uid://c84g34ftppp8w"]
 
-[ext_resource type="Script" path="res://scripts/loot_chest.gd" id="1_chest_script"]
+[ext_resource type="Script" uid="uid://c3ey40u88ajwy" path="res://scripts/loot_chest.gd" id="1_chest_script"]
 [ext_resource type="Texture2D" uid="uid://xxmapap0t68b" path="res://assets/sprites/loot_chest.png" id="2_chest_tex"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_solid_chest"]
-size = Vector2(28, 30)
+size = Vector2(28, 17)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_interact_chest"]
 size = Vector2(38, 42)
 
-[node name="loot_chest" type="StaticBody2D"]
-z_index = 0
+[node name="loot_chest" type="StaticBody2D" unique_id=854973701]
 collision_layer = 193
 collision_mask = 0
 script = ExtResource("1_chest_script")
 
-[node name="Sprite2D" type="Sprite2D" parent="."]
+[node name="Sprite2D" type="Sprite2D" parent="." unique_id=1543821527]
 texture = ExtResource("2_chest_tex")
 hframes = 2
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
-position = Vector2(0, -7)
+[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=301192979]
+position = Vector2(0, -0.5)
 shape = SubResource("RectangleShape2D_solid_chest")
 
-[node name="interact_area" type="Area2D" parent="."]
+[node name="interact_area" type="Area2D" parent="." unique_id=1088029383]
 collision_layer = 0
 collision_mask = 6
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="interact_area"]
+[node name="CollisionShape2D" type="CollisionShape2D" parent="interact_area" unique_id=1073175608]
 position = Vector2(0, -3)
 shape = SubResource("RectangleShape2D_interact_chest")

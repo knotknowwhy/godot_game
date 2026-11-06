@@ -21,12 +21,10 @@ const TEX_SPEED = preload("res://assets/sprites/pickup_speed.png")
 const TEX_POWER = preload("res://assets/sprites/pickup_power.png")
 const FLOATING_TEXT_SCENE = preload("res://scenes/floating_text.tscn")
 
-const MAGNETIC_RADIUS: float = 42.0
-var magnet_speed: float = 75.0
-var player_ref: Node2D = null
 var bob_time: float = 0.0
 var base_sprite_y: float = 0.0
 var is_collected: bool = false
+var can_collect: bool = false
 
 func _ready() -> void:
 	collision_layer = 0
@@ -36,19 +34,52 @@ func _ready() -> void:
 	base_sprite_y = sprite.position.y
 	bob_time = randf_range(0.0, TAU)
 	
-	# Spawn pop-in flare
+	body_entered.connect(_on_body_entered)
+	
+	# Pop out and drop onto the floor nearby
+	pop_out_drop(Vector2(randf_range(-14, 14), randf_range(6, 16)))
+
+func pop_out_drop(drop_offset: Vector2) -> void:
+	can_collect = false
+	var start_pos = global_position
+	var end_pos = start_pos + drop_offset
+	
 	scale = Vector2(0.2, 0.2)
+	modulate.a = 0.8
+	
 	var tw = create_tween()
-	tw.tween_property(self, "scale", Vector2.ONE, 0.25)\
+	tw.set_parallel(true)
+	tw.tween_property(self, "global_position:x", end_pos.x, 0.35)\
+		.set_trans(Tween.TRANS_QUAD)\
+		.set_ease(Tween.EASE_OUT)
+	tw.tween_property(self, "scale", Vector2.ONE, 0.35)\
 		.set_trans(Tween.TRANS_BACK)\
 		.set_ease(Tween.EASE_OUT)
+	tw.tween_property(self, "modulate:a", 1.0, 0.35)
 	
-	body_entered.connect(_on_body_entered)
-	_find_player()
-
-func _find_player() -> void:
-	if not player_ref or not is_instance_valid(player_ref):
-		player_ref = get_tree().get_first_node_in_group("player")
+	var y_tw = create_tween()
+	y_tw.tween_property(self, "global_position:y", start_pos.y - 12.0, 0.16)\
+		.set_trans(Tween.TRANS_QUAD)\
+		.set_ease(Tween.EASE_OUT)
+	y_tw.tween_property(self, "global_position:y", end_pos.y, 0.19)\
+		.set_trans(Tween.TRANS_QUAD)\
+		.set_ease(Tween.EASE_IN)
+	# Subtle bounce on landing
+	y_tw.tween_property(self, "global_position:y", end_pos.y - 4.0, 0.07)\
+		.set_trans(Tween.TRANS_QUAD)\
+		.set_ease(Tween.EASE_OUT)
+	y_tw.tween_property(self, "global_position:y", end_pos.y, 0.07)\
+		.set_trans(Tween.TRANS_QUAD)\
+		.set_ease(Tween.EASE_IN)
+	
+	# Only allow collection after landing
+	tw.chain().tween_callback(func():
+		can_collect = true
+		for b in get_overlapping_bodies():
+			if b.is_in_group("player") or b.name == "player":
+				_collect(b)
+				break
+	)
 
 func _update_texture() -> void:
 	if not sprite:
@@ -68,24 +99,20 @@ func _physics_process(delta: float) -> void:
 	if is_collected:
 		return
 	
+	# Gentle floating bob on the floor
 	bob_time += delta * 4.0
-	sprite.position.y = base_sprite_y + sin(bob_time) * 1.8
-	
-	_find_player()
-	if player_ref and is_instance_valid(player_ref):
-		var dist = global_position.distance_to(player_ref.global_position)
-		if dist <= MAGNETIC_RADIUS:
-			# Magnetic pull accelerating toward player
-			magnet_speed = minf(magnet_speed + delta * 350.0, 260.0)
-			global_position = global_position.move_toward(player_ref.global_position, magnet_speed * delta)
+	if sprite:
+		sprite.position.y = base_sprite_y + sin(bob_time) * 1.8
 
 func _on_body_entered(body: Node2D) -> void:
-	if is_collected:
+	if not can_collect or is_collected:
 		return
 	if body.is_in_group("player") or body.name == "player":
 		_collect(body)
 
 func _collect(player: Node2D) -> void:
+	if is_collected:
+		return
 	is_collected = true
 	collision_shape.set_deferred("disabled", true)
 	
@@ -110,7 +137,7 @@ func _collect(player: Node2D) -> void:
 			text_col = Color(1.0, 0.85, 0.25)
 			
 	# Spawn floating pickup label
-	if FLOATING_TEXT_SCENE:
+	if FLOATING_TEXT_SCENE and get_parent():
 		var ft = FLOATING_TEXT_SCENE.instantiate()
 		ft.global_position = global_position + Vector2(0, -6)
 		get_parent().add_child(ft)
