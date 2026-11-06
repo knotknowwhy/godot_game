@@ -5,40 +5,41 @@
 [ext_resource type="Texture2D" uid="uid://de3o64rlhpbew" path="res://assets/sprites/blood_00.png" id="3_b7rh7"]
 [ext_resource type="Texture2D" uid="uid://4iouka3udavl" path="res://assets/sprites/blood_01.png" id="4_7fr42"]
 
-[node name="u_dead" type="Node2D"]
+[node name="u_dead" type="Node2D" unique_id=771470868]
 script = ExtResource("1_5nbnt")
 
-[node name="TextureRect" type="TextureRect" parent="."]
+[node name="TextureRect" type="TextureRect" parent="." unique_id=1258091244]
 offset_right = 1152.0
 offset_bottom = 645.0
 texture = ExtResource("1_x3kmo")
 
-[node name="TextureRect2" type="TextureRect" parent="."]
-offset_left = 215.0
-offset_top = 85.0
-offset_right = 596.0
-offset_bottom = 466.0
+[node name="TextureRect2" type="TextureRect" parent="." unique_id=1112572134]
+offset_left = 590.0
+offset_top = 397.0
+offset_right = 971.0
+offset_bottom = 778.0
 texture = ExtResource("3_b7rh7")
 
-[node name="TextureRect3" type="TextureRect" parent="."]
-offset_left = 622.0
-offset_top = -146.0
-offset_right = 1146.0
-offset_bottom = 378.0
+[node name="TextureRect3" type="TextureRect" parent="." unique_id=1121296277]
+offset_left = 997.0
+offset_top = 166.0
+offset_right = 1521.0
+offset_bottom = 690.0
 texture = ExtResource("4_7fr42")
 
-[node name="Button" type="Button" parent="."]
-offset_left = 397.0
-offset_top = 253.0
-offset_right = 744.0
-offset_bottom = 372.0
+[node name="Button" type="Button" parent="." unique_id=1624833161]
+offset_left = 772.0
+offset_top = 565.0
+offset_right = 1119.0
+offset_bottom = 684.0
 theme_override_font_sizes/font_size = 35
 text = "Reload Game"
 
-[node name="Label" type="Label" parent="."]
-offset_top = 152.0
-offset_right = 1153.0
-offset_bottom = 274.0
+[node name="Label" type="Label" parent="." unique_id=785127512]
+offset_left = 375.0
+offset_top = 464.0
+offset_right = 1528.0
+offset_bottom = 586.0
 theme_override_colors/font_color = Color(0.8920525, 0.09278556, 0.053577, 1)
 theme_override_font_sizes/font_size = 38
 text = "U have died"

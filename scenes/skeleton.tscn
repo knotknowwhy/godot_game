@@ -328,8 +328,9 @@ animations = [{
 "speed": 5.0
 }]
 
-[sub_resource type="RectangleShape2D" id="RectangleShape2D_v6rpr"]
-size = Vector2(10.5, 5)
+[sub_resource type="CapsuleShape2D" id="CapsuleShape2D_skeleton_ground"]
+radius = 3.5
+height = 10.0
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_pbvs3"]
 size = Vector2(13, 8)
@@ -344,6 +345,7 @@ radius = 74.02702
 [node name="skeleton" type="CharacterBody2D"]
 collision_layer = 4096
 collision_mask = 4290
+motion_mode = 1
 script = ExtResource("1_txkty")
 
 [node name="animation" type="AnimatedSprite2D" parent="."]
@@ -352,7 +354,8 @@ animation = &"walk_up"
 
 [node name="ground_collision" type="CollisionShape2D" parent="."]
 position = Vector2(-0.25, 14.5)
-shape = SubResource("RectangleShape2D_v6rpr")
+rotation = 1.5707964
+shape = SubResource("CapsuleShape2D_skeleton_ground")
 debug_color = Color(0.11502097, 0.6478189, 0, 0.41960785)
 
 [node name="hit_area" type="Area2D" parent="."]

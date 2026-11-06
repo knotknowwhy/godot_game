@@ -6,8 +6,9 @@ enum State {
 	IDLE,
 	CHASE,
 	TELEGRAPH,
-	LUNGE,
+	STRIKE,
 	RECOVERY,
+	HITSTUN,
 	STAGGERED,
 	COOLDOWN
 }
@@ -18,19 +19,19 @@ enum State {
 @onready var attack_area: Area2D = $attack_area_skelet
 @onready var hit_shape: CollisionShape2D = $hit_area/hit_shape
 @onready var attack_shape: CollisionShape2D = $attack_area_skelet/attack_shape
-@onready var skeleton: CharacterBody2D = $"."
 @onready var health_bar = $health_bar
 
-const SPEED = 60.0
-const LUNGE_SPEED = 175.0
+const SPEED: float = 48.0
+const STRIKE_NUDGE_SPEED: float = 38.0
 var facing_direction: Vector2 = Vector2.DOWN
 var attack_direction: Vector2 = Vector2.DOWN
 
 @export var max_health: int = 100
 @export var damage_per_hit: int = 35
-@export var attack_damage: int = 20
-@export var attack_range: float = 30.0
-@export var attack_cooldown: float = 1.0
+@export var attack_damage: int = 15
+@export var attack_range: float = 28.0
+@export var min_attack_cooldown: float = 1.1
+@export var max_attack_cooldown: float = 1.6
 
 var current_state: State = State.IDLE
 var health: int = max_health
@@ -43,11 +44,22 @@ var damage_tween: Tween = null
 var attack_tween: Tween = null
 var windup_shake_timer: float = 0.0
 
+# Organic AI personality parameters
+var flank_offset_angle: float = 0.0
+var wander_seed: float = 0.0
+var speed_variance: float = 1.0
+
 func _ready() -> void:
 	add_to_group("enemies")
 	health = max_health
 	if health_bar:
 		health_bar.set_health(health, max_health)
+	
+	# Assign unique approach characteristics so enemies don't mirror each other
+	flank_offset_angle = randf_range(-0.55, 0.55)
+	wander_seed = randf_range(0.0, 100.0)
+	speed_variance = randf_range(0.92, 1.08)
+	
 	_find_player_target()
 
 func _find_player_target() -> void:
@@ -62,14 +74,23 @@ func _find_player_target() -> void:
 
 func _get_separation_vector() -> Vector2:
 	var push = Vector2.ZERO
+	# Mutual repulsion between enemies to prevent stacking
 	var enemies = get_tree().get_nodes_in_group("enemies")
 	for e in enemies:
 		if e == self or not is_instance_valid(e):
 			continue
 		var diff = global_position - e.global_position
 		var d = diff.length()
-		if d > 0.001 and d < 22.0:
-			push += (diff / d) * (1.0 - d / 22.0)
+		if d > 0.001 and d < 24.0:
+			push += (diff / d) * (1.0 - d / 24.0)
+	
+	# Gentle repulsion from player when touching to prevent gluing
+	if player_target and is_instance_valid(player_target):
+		var p_diff = global_position - player_target.global_position
+		var p_dist = p_diff.length()
+		if p_dist > 0.001 and p_dist < 18.0:
+			push += (p_diff / p_dist) * (1.0 - p_dist / 18.0) * 1.4
+			
 	return push
 
 func _physics_process(delta: float) -> void:
@@ -77,14 +98,32 @@ func _physics_process(delta: float) -> void:
 		return
 	
 	match current_state:
-		State.IDLE, State.COOLDOWN:
+		State.IDLE:
 			velocity = velocity.move_toward(Vector2.ZERO, SPEED * 2.0)
 			if player_target and is_instance_valid(player_target):
-				if current_state != State.COOLDOWN and can_attack:
+				if can_attack:
 					current_state = State.CHASE
 				else:
-					# During cooldown, face the player while standing or recovering
 					facing_direction = global_position.direction_to(player_target.global_position)
+			_update_animation_by_velocity()
+			move_and_slide()
+			
+		State.COOLDOWN:
+			# During cooldown, maintain tactical spacing / circling rather than gluing
+			if player_target and is_instance_valid(player_target):
+				var to_player = global_position.direction_to(player_target.global_position)
+				var dist = global_position.distance_to(player_target.global_position)
+				facing_direction = to_player
+				var sep = _get_separation_vector()
+				if dist < 26.0:
+					# Back off slightly
+					velocity = (-to_player * 20.0 + sep * 25.0)
+				else:
+					# Gentle slow circle
+					var circle_dir = to_player.rotated(PI * 0.45)
+					velocity = (circle_dir * 18.0 + sep * 20.0)
+			else:
+				velocity = velocity.move_toward(Vector2.ZERO, SPEED)
 			_update_animation_by_velocity()
 			move_and_slide()
 			
@@ -94,11 +133,14 @@ func _physics_process(delta: float) -> void:
 				if dist <= attack_range and can_attack:
 					_start_telegraph()
 				else:
-					var target_dir = global_position.direction_to(player_target.global_position)
+					wander_seed += delta * 2.2
+					var sway = sin(wander_seed) * 0.18
+					var to_player = global_position.direction_to(player_target.global_position)
+					var approach_dir = to_player.rotated(flank_offset_angle + sway)
 					var sep = _get_separation_vector()
-					var move_dir = (target_dir + sep * 0.85).normalized()
-					velocity = move_dir * SPEED
-					facing_direction = target_dir
+					var move_dir = (approach_dir + sep * 1.1).normalized()
+					velocity = move_dir * (SPEED * speed_variance)
+					facing_direction = to_player
 			else:
 				velocity = velocity.move_toward(Vector2.ZERO, SPEED)
 				current_state = State.IDLE
@@ -106,26 +148,27 @@ func _physics_process(delta: float) -> void:
 			move_and_slide()
 			
 		State.TELEGRAPH:
+			# Completely stationary windup - commits to attack direction
 			velocity = Vector2.ZERO
-			# Anticipation tremble / shake
-			windup_shake_timer += delta * 35.0
-			animation.position.x = sin(windup_shake_timer) * 1.5
-			# Lock facing direction toward target at start of windup
-			if player_target and is_instance_valid(player_target):
-				attack_direction = global_position.direction_to(player_target.global_position)
-				facing_direction = attack_direction
+			windup_shake_timer += delta * 30.0
+			animation.position.x = sin(windup_shake_timer) * 1.2
 			_update_idle_animation()
 			move_and_slide()
 			
-		State.LUNGE:
-			# Fast forward thrust toward target
-			velocity = attack_direction * LUNGE_SPEED
+		State.STRIKE:
+			# Small forward step impact; velocity decays quickly
+			velocity = velocity.move_toward(Vector2.ZERO, SPEED * 2.5)
 			move_and_slide()
 			
 		State.RECOVERY:
-			# Committed vulnerability pause after strike
+			# Vulnerable pause after strike
 			velocity = velocity.move_toward(Vector2.ZERO, SPEED * 3.0)
 			_update_idle_animation()
+			move_and_slide()
+			
+		State.HITSTUN:
+			# Knockback decay from taking damage
+			velocity = velocity.move_toward(Vector2.ZERO, SPEED * 4.0)
 			move_and_slide()
 			
 		State.STAGGERED:
@@ -134,7 +177,7 @@ func _physics_process(delta: float) -> void:
 			move_and_slide()
 
 func _update_animation_by_velocity() -> void:
-	if velocity.length() > 5.0:
+	if velocity.length() > 6.0:
 		if abs(facing_direction.x) > abs(facing_direction.y):
 			if facing_direction.x > 0:
 				animation.play("walk_right")
@@ -167,6 +210,7 @@ func _start_telegraph() -> void:
 	windup_shake_timer = 0.0
 	
 	if player_target and is_instance_valid(player_target):
+		# Lock strike direction once at the start of windup (no aimbot tracking)
 		attack_direction = global_position.direction_to(player_target.global_position)
 		facing_direction = attack_direction
 	
@@ -177,54 +221,58 @@ func _start_telegraph() -> void:
 	attack_tween = create_tween()
 	
 	# Windup Anticipation:
-	# 1. Menacing glowing red tint
-	# 2. Slight pull-back / squash in anticipation of the lunge
-	var pull_back = -attack_direction * 4.0
+	# Subtle pull-back and reddish telegraph tint
+	var pull_back = -attack_direction * 3.5
 	attack_tween.set_parallel(true)
-	attack_tween.tween_property(animation, "modulate", Color(2.4, 0.35, 0.35), 0.45)
-	attack_tween.tween_property(animation, "scale", Vector2(1.18, 0.82), 0.45)
-	attack_tween.tween_property(animation, "position", pull_back, 0.45)
+	attack_tween.tween_property(animation, "modulate", Color(2.2, 0.4, 0.4), 0.38)
+	attack_tween.tween_property(animation, "scale", Vector2(1.15, 0.85), 0.38)
+	attack_tween.tween_property(animation, "position", pull_back, 0.38)
 	
-	# After 0.45s telegraph, release the strike lunge!
-	attack_tween.chain().tween_callback(_start_lunge)
+	# Release strike after telegraph
+	attack_tween.chain().tween_callback(_start_strike)
 
-func _start_lunge() -> void:
-	if is_dead or current_state == State.STAGGERED:
+func _start_strike() -> void:
+	if is_dead or current_state == State.STAGGERED or current_state == State.HITSTUN:
 		return
 	
-	current_state = State.LUNGE
+	current_state = State.STRIKE
+	# Minor forward nudge over 0.08s (never a full-screen homing rush)
+	velocity = attack_direction * STRIKE_NUDGE_SPEED
 	
 	if attack_tween and attack_tween.is_running():
 		attack_tween.kill()
 	attack_tween = create_tween()
 	
 	# Strike Flash:
-	# Stretch forward in attack direction and flash bright white impact
+	# Crisp forward punch and bright white impact
 	attack_tween.set_parallel(true)
-	attack_tween.tween_property(animation, "modulate", Color(2.2, 2.2, 2.2), 0.08)
-	attack_tween.tween_property(animation, "scale", Vector2(0.85, 1.25), 0.08)
-	attack_tween.tween_property(animation, "position", attack_direction * 6.0, 0.08)
+	attack_tween.tween_property(animation, "modulate", Color(2.0, 2.0, 2.0), 0.08)
+	attack_tween.tween_property(animation, "scale", Vector2(0.9, 1.2), 0.08)
+	attack_tween.tween_property(animation, "position", attack_direction * 5.0, 0.08)
 	
-	# Execute hit at strike impact
+	# Execute damage at apex of strike
 	attack_tween.chain().tween_callback(_execute_strike_hit)
 	
-	# Finish lunge and transition to recovery
-	attack_tween.chain().tween_interval(0.08)
+	# Finish strike and enter recovery pause
+	attack_tween.chain().tween_interval(0.06)
 	attack_tween.chain().tween_callback(_start_recovery)
 
 func _execute_strike_hit() -> void:
-	if is_dead or current_state != State.LUNGE:
+	if is_dead or current_state != State.STRIKE:
 		return
 	
 	if player_target and is_instance_valid(player_target):
 		var dist = global_position.distance_to(player_target.global_position)
-		const STRIKE_REACH: float = 38.0
+		const STRIKE_REACH: float = 32.0
+		# Reach and angle check (allows dodging / stepping back)
 		if dist <= STRIKE_REACH:
-			if player_target.has_method("take_damage"):
-				player_target.take_damage(attack_damage, self)
+			var to_player = global_position.direction_to(player_target.global_position)
+			if attack_direction.dot(to_player) > 0.3:
+				if player_target.has_method("take_damage"):
+					player_target.take_damage(attack_damage, self)
 
 func _start_recovery() -> void:
-	if is_dead or current_state == State.STAGGERED:
+	if is_dead or current_state == State.STAGGERED or current_state == State.HITSTUN:
 		return
 	
 	current_state = State.RECOVERY
@@ -236,16 +284,17 @@ func _start_recovery() -> void:
 	
 	# Smoothly return to normal scale and color
 	attack_tween.set_parallel(true)
-	attack_tween.tween_property(animation, "modulate", Color.WHITE, 0.35)
-	attack_tween.tween_property(animation, "scale", Vector2.ONE, 0.25)
-	attack_tween.tween_property(animation, "position", Vector2.ZERO, 0.25)
+	attack_tween.tween_property(animation, "modulate", Color.WHITE, 0.22)
+	attack_tween.tween_property(animation, "scale", Vector2.ONE, 0.22)
+	attack_tween.tween_property(animation, "position", Vector2.ZERO, 0.22)
 	
-	# Recovery window lasts 0.38s -> enter cooldown
+	# Recovery pause -> enter cooldown
 	attack_tween.chain().tween_callback(func():
-		if is_dead or current_state == State.STAGGERED:
+		if is_dead or current_state == State.STAGGERED or current_state == State.HITSTUN:
 			return
 		current_state = State.COOLDOWN
-		get_tree().create_timer(attack_cooldown).timeout.connect(func():
+		var cd = randf_range(min_attack_cooldown, max_attack_cooldown)
+		get_tree().create_timer(cd).timeout.connect(func():
 			if is_instance_valid(self) and not is_dead:
 				can_attack = true
 				if current_state == State.COOLDOWN:
@@ -264,9 +313,9 @@ func stagger(duration: float = 1.2) -> void:
 		attack_tween.kill()
 	
 	# Knockback impulse away from player
-	velocity = -attack_direction * 150.0
+	velocity = -attack_direction * 140.0
 	
-	# Stunned golden/lightning pulse
+	# Stunned golden pulse
 	animation.position = Vector2.ZERO
 	animation.scale = Vector2(1.1, 0.9)
 	animation.modulate = Color(2.4, 2.1, 0.3)
@@ -293,9 +342,12 @@ func stagger(duration: float = 1.2) -> void:
 
 func _on_hit_area_area_entered(area: Area2D) -> void:
 	if area.name == "attack_area_player" and not is_dead and not is_invulnerable:
-		take_damage(damage_per_hit)
+		var kb_dir = (global_position - area.global_position).normalized()
+		if kb_dir == Vector2.ZERO:
+			kb_dir = -facing_direction
+		take_damage(damage_per_hit, kb_dir)
 
-func take_damage(amount: int) -> void:
+func take_damage(amount: int, knockback_dir: Vector2 = Vector2.ZERO) -> void:
 	if is_dead or is_invulnerable:
 		return
 	
@@ -316,31 +368,47 @@ func take_damage(amount: int) -> void:
 	
 	if health <= 0:
 		_die()
-	else:
-		if is_critical:
-			_flash_critical()
-		else:
-			_flash_red()
+		return
+	
+	# Apply hit-stun and knockback so player is rewarded for landing hits
+	_apply_hitstun(knockback_dir, is_critical)
 
-func _flash_critical() -> void:
+func _apply_hitstun(knockback_dir: Vector2, is_critical: bool) -> void:
+	if attack_tween and attack_tween.is_running():
+		attack_tween.kill()
+	
+	current_state = State.HITSTUN
+	can_attack = false
+	
+	# Knockback impulse
+	velocity = knockback_dir * 110.0
+	
+	# Hit flinch visual
 	is_invulnerable = true
 	if damage_tween:
 		damage_tween.kill()
 	
-	animation.modulate = Color(3.0, 2.6, 0.8)
-	damage_tween = create_tween()
-	damage_tween.tween_property(animation, "modulate", Color.WHITE, 0.3)
-	damage_tween.tween_callback(func(): is_invulnerable = false)
-
-func _flash_red() -> void:
-	is_invulnerable = true
-	if damage_tween:
-		damage_tween.kill()
+	animation.position = Vector2.ZERO
+	animation.scale = Vector2(0.88, 1.15)
+	animation.modulate = Color(3.0, 2.6, 0.8) if is_critical else Color(2.2, 0.3, 0.3)
 	
-	animation.modulate = Color(1.0, 0.25, 0.25)
 	damage_tween = create_tween()
-	damage_tween.tween_property(animation, "modulate", Color.WHITE, 0.2)
-	damage_tween.tween_callback(func(): is_invulnerable = false)
+	damage_tween.set_parallel(true)
+	damage_tween.tween_property(animation, "modulate", Color.WHITE, 0.22)
+	damage_tween.tween_property(animation, "scale", Vector2.ONE, 0.22)
+	
+	# Hit-stun duration (0.22s) -> transition to brief cooldown
+	get_tree().create_timer(0.22).timeout.connect(func():
+		if is_instance_valid(self) and not is_dead and current_state == State.HITSTUN:
+			is_invulnerable = false
+			current_state = State.COOLDOWN
+			get_tree().create_timer(0.55).timeout.connect(func():
+				if is_instance_valid(self) and not is_dead:
+					can_attack = true
+					if current_state == State.COOLDOWN:
+						current_state = State.CHASE
+			)
+	)
 
 func _die() -> void:
 	if is_dead:
@@ -369,12 +437,10 @@ func _die() -> void:
 
 func _on_see_area_body_entered(body: Node2D) -> void:
 	if body.name == "player" or body is CharacterBody2D:
-		print("spotted body: ", body.name)
 		player_target = body
 
 func _on_see_area_body_exited(body: Node2D) -> void:
 	if body == player_target:
-		print("not interested")
 		player_target = null
 
 func _on_see_area_area_entered(area: Area2D) -> void:

@@ -13,6 +13,8 @@ const DODGE_SPEED: float = 220.0
 const DODGE_DURATION: float = 0.22
 const DODGE_COOLDOWN: float = 0.30
 const PARRY_WINDOW: float = 0.22
+const ATTACK_ACTIVE_WINDOW: float = 0.16
+const ATTACK_MOVE_RESUME_WINDOW: float = 0.24
 
 @export var max_health: int = 100
 var health: int = max_health
@@ -24,6 +26,10 @@ var can_dodge = true
 var is_invulnerable: bool = false
 var is_dead: bool = false
 var damage_tween: Tween = null
+
+var attack_timer: float = 0.0
+var attack_can_cancel: bool = false
+var dodge_buffered: bool = false
 
 var facing_direction: Vector2 = Vector2.DOWN
 var dodge_direction: Vector2 = Vector2.DOWN
@@ -39,28 +45,54 @@ func _physics_process(delta: float) -> void:
 	if is_dead:
 		return
 	
+	# Determine if player has movement control
+	var can_move := not isBlocking and not isDodging and (not isAttacking or attack_timer >= ATTACK_MOVE_RESUME_WINDOW)
+
 	# get direction inputs
 	var direction_x := 0.0
-	if Input.is_action_pressed("Right") && isAttacking == false && isBlocking == false && isDodging == false:
+	if Input.is_action_pressed("Right") and can_move:
 		direction_x += 1.0
-	if Input.is_action_pressed("Left") && isAttacking == false && isBlocking == false && isDodging == false:
+	if Input.is_action_pressed("Left") and can_move:
 		direction_x -= 1.0
 	
 	var direction_y := 0.0
-	if Input.is_action_pressed("Down") && isAttacking == false && isBlocking == false && isDodging == false:
+	if Input.is_action_pressed("Down") and can_move:
 		direction_y += 1.0
-	if Input.is_action_pressed("Up") && isAttacking == false && isBlocking == false && isDodging == false:
+	if Input.is_action_pressed("Up") and can_move:
 		direction_y -= 1.0
 		
 	var input_direction := Vector2(direction_x, direction_y)
 	
 	if input_direction != Vector2.ZERO:
 		facing_direction = input_direction.normalized()
+		# If walking out of attack recovery, smoothly resume walking
+		if isAttacking and attack_timer >= ATTACK_MOVE_RESUME_WINDOW:
+			isAttacking = false
+			attack_shape.disabled = true
+			attack_can_cancel = false
+			dodge_buffered = false
+
+	# Handle active attack timing and dodge canceling
+	if isAttacking:
+		attack_timer += delta
+		if attack_timer >= ATTACK_ACTIVE_WINDOW:
+			attack_shape.disabled = true
+			attack_can_cancel = true
+			if dodge_buffered and can_dodge and not isDodging:
+				_cancel_attack_and_dodge(input_direction if input_direction != Vector2.ZERO else facing_direction)
+				return
 	
-	# dodge roll / dash trigger
-	if Input.is_action_just_pressed("Dodge") and can_dodge and not isDodging and not isAttacking and not isBlocking:
-		_start_dodge(input_direction)
-		return
+	# dodge roll / dash trigger (supports instant dodge cancel and input buffering during attack)
+	if Input.is_action_just_pressed("Dodge"):
+		if isAttacking:
+			if attack_can_cancel and can_dodge and not isDodging:
+				_cancel_attack_and_dodge(input_direction if input_direction != Vector2.ZERO else facing_direction)
+				return
+			else:
+				dodge_buffered = true
+		elif can_dodge and not isDodging and not isBlocking:
+			_start_dodge(input_direction)
+			return
 	
 	# If currently dodging, skip standard movement/input overrides
 	if isDodging:
@@ -80,7 +112,7 @@ func _physics_process(delta: float) -> void:
 		velocity.x = move_toward(velocity.x, 0, SPEED)
 	
 	# walk and idle
-	if input_direction != Vector2.ZERO && isAttacking == false && isBlocking == false:
+	if input_direction != Vector2.ZERO and not isAttacking and not isBlocking:
 		if abs(facing_direction.x) > abs(facing_direction.y):
 			if facing_direction.x > 0:
 				player_animation.play("walk_right")
@@ -91,7 +123,7 @@ func _physics_process(delta: float) -> void:
 				player_animation.play("walk_down")
 			else:
 				player_animation.play("walk_up")
-	elif isAttacking == false && isBlocking == false:
+	elif not isAttacking and not isBlocking:
 		if abs(facing_direction.x) > abs(facing_direction.y):
 			if facing_direction.x > 0:
 				player_animation.play("idle_right")
@@ -103,9 +135,12 @@ func _physics_process(delta: float) -> void:
 			else:
 				player_animation.play("idle_up")
 	
-	# attack animation
-	if Input.is_action_just_pressed("Attack_sword") && isBlocking == false && isDodging == false:
+	# attack animation trigger
+	if Input.is_action_just_pressed("Attack_sword") and not isBlocking and not isDodging and not isAttacking:
 		isAttacking = true
+		attack_timer = 0.0
+		attack_can_cancel = false
+		dodge_buffered = false
 		attack_shape.disabled = false
 		var capsule = attack_shape.shape as CapsuleShape2D
 		if abs(facing_direction.x) > abs(facing_direction.y):
@@ -168,6 +203,13 @@ func _physics_process(delta: float) -> void:
 		block_shape.disabled = true
 	
 	move_and_slide()
+
+func _cancel_attack_and_dodge(input_dir: Vector2) -> void:
+	isAttacking = false
+	attack_shape.disabled = true
+	attack_can_cancel = false
+	dodge_buffered = false
+	_start_dodge(input_dir)
 
 func _start_dodge(input_dir: Vector2) -> void:
 	isDodging = true
@@ -302,11 +344,13 @@ func _die() -> void:
 	)
 
 func _on_player_animation_animation_finished() -> void:
-	if player_animation.animation == "attack_right" or player_animation.animation == "attack_left" or player_animation.animation == "attack_up" or player_animation.animation == "attack_down":
+	if player_animation.animation.begins_with("attack_"):
 		isAttacking = false
 		attack_shape.disabled = true
+		attack_can_cancel = false
+		dodge_buffered = false
 	
-	if player_animation.animation == "block_right" or player_animation.animation == "block_left" or player_animation.animation == "block_up" or player_animation.animation == "block_down":
+	if player_animation.animation.begins_with("block_"):
 		if not Input.is_action_pressed("Block_sword"):
 			isBlocking = false
 			block_shape.disabled = true

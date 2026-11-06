@@ -18,16 +18,16 @@ var waves: Array = [
 	{
 		"name": "Wave 1",
 		"spawns": [
-			Vector2(50, 20),
-			Vector2(-20, -10)
+			Vector2(-75, 25),
+			Vector2(85, 15)
 		]
 	},
 	{
 		"name": "Wave 2",
 		"spawns": [
-			Vector2(-110, -15),
-			Vector2(80, 45),
-			Vector2(0, 30)
+			Vector2(-70, -15),
+			Vector2(85, -15),
+			Vector2(10, 65)
 		]
 	}
 ]
