@@ -1,0 +1,31 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://scripts/sliding_door.gd" id="1_door_script"]
+[ext_resource type="Texture2D" uid="uid://cd8r5ma3h32ue" path="res://assets/sprites/portcullis_door.png" id="2_door_tex"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_door"]
+size = Vector2(48, 16)
+
+[node name="sliding_door" type="StaticBody2D"]
+z_index = 1
+collision_layer = 193
+collision_mask = 0
+script = ExtResource("1_door_script")
+
+[node name="door_slot" type="Control" parent="."]
+clip_contents = true
+custom_minimum_size = Vector2(48, 36)
+layout_mode = 3
+anchors_preset = 0
+offset_left = -24.0
+offset_top = -18.0
+offset_right = 24.0
+offset_bottom = 18.0
+
+[node name="door_sprite" type="Sprite2D" parent="door_slot"]
+position = Vector2(24, 18)
+texture = ExtResource("2_door_tex")
+
+[node name="collision_shape" type="CollisionShape2D" parent="."]
+position = Vector2(0, 16)
+shape = SubResource("RectangleShape2D_door")

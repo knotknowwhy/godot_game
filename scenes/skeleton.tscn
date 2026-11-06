@@ -1,4 +1,4 @@
-[gd_scene load_steps=50 format=3 uid="uid://bk6ckqhlyj1gm"]
+[gd_scene format=3 uid="uid://bk6ckqhlyj1gm"]
 
 [ext_resource type="Texture2D" uid="uid://biocelra1uj7p" path="res://assets/sprites/Skeleton/Skeleton_Idle.png" id="1_pbvs3"]
 [ext_resource type="Script" uid="uid://cddej8t36d0o5" path="res://scripts/skeleton.gd" id="1_txkty"]
@@ -343,7 +343,7 @@ radius = 74.02702
 
 [node name="skeleton" type="CharacterBody2D"]
 collision_layer = 4096
-collision_mask = 192
+collision_mask = 4290
 script = ExtResource("1_txkty")
 
 [node name="animation" type="AnimatedSprite2D" parent="."]

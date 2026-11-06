@@ -1,0 +1,43 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://scripts/arena_manager.gd" id="1_arena_script"]
+[ext_resource type="FontFile" path="res://assets/fonts/PressStart2P-Regular.ttf" id="2_pixel_font"]
+
+[node name="arena_manager" type="Node2D"]
+script = ExtResource("1_arena_script")
+
+[node name="arena_hud" type="CanvasLayer" parent="."]
+layer = 10
+
+[node name="center_anchor" type="Control" parent="arena_hud"]
+layout_mode = 3
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.22
+anchor_right = 0.5
+anchor_bottom = 0.22
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="announcement_label" type="Label" parent="arena_hud/center_anchor"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -400.0
+offset_top = -40.0
+offset_right = 400.0
+offset_bottom = 40.0
+grow_horizontal = 2
+grow_vertical = 2
+pivot_offset = Vector2(400, 40)
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_outline_color = Color(0.04, 0.04, 0.06, 1)
+theme_override_constants/outline_size = 8
+theme_override_fonts/font = ExtResource("2_pixel_font")
+theme_override_font_sizes/font_size = 28
+text = "Wave 1/2 starts"
+horizontal_alignment = 1
+vertical_alignment = 1

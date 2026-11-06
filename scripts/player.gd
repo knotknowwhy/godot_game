@@ -5,21 +5,32 @@ extends CharacterBody2D
 @onready var attack_shape: CollisionShape2D = $attack_area_player/attack_shape_player
 @onready var max_block_time: Timer = $max_block_time
 @onready var health_bar = $hud/margin/hbox/player_health_bar
+@onready var damage_vignette: ColorRect = $hud/damage_vignette
+var vignette_tween: Tween = null
 
 const SPEED = 100.0
+const DODGE_SPEED: float = 220.0
+const DODGE_DURATION: float = 0.22
+const DODGE_COOLDOWN: float = 0.30
+const PARRY_WINDOW: float = 0.22
 
 @export var max_health: int = 100
 var health: int = max_health
 
 var isAttacking = false
 var isBlocking = false
+var isDodging = false
+var can_dodge = true
 var is_invulnerable: bool = false
 var is_dead: bool = false
 var damage_tween: Tween = null
 
 var facing_direction: Vector2 = Vector2.DOWN
+var dodge_direction: Vector2 = Vector2.DOWN
+var block_start_time: float = 0.0
 
 func _ready() -> void:
+	add_to_group("player")
 	health = max_health
 	if health_bar:
 		health_bar.set_health(health, max_health)
@@ -30,21 +41,32 @@ func _physics_process(delta: float) -> void:
 	
 	# get direction inputs
 	var direction_x := 0.0
-	if Input.is_action_pressed("Right") && isAttacking == false && isBlocking == false:
+	if Input.is_action_pressed("Right") && isAttacking == false && isBlocking == false && isDodging == false:
 		direction_x += 1.0
-	if Input.is_action_pressed("Left") && isAttacking == false && isBlocking == false:
+	if Input.is_action_pressed("Left") && isAttacking == false && isBlocking == false && isDodging == false:
 		direction_x -= 1.0
 	
 	var direction_y := 0.0
-	if Input.is_action_pressed("Down") && isAttacking == false && isBlocking == false:
+	if Input.is_action_pressed("Down") && isAttacking == false && isBlocking == false && isDodging == false:
 		direction_y += 1.0
-	if Input.is_action_pressed("Up") && isAttacking == false && isBlocking == false:
+	if Input.is_action_pressed("Up") && isAttacking == false && isBlocking == false && isDodging == false:
 		direction_y -= 1.0
 		
 	var input_direction := Vector2(direction_x, direction_y)
 	
 	if input_direction != Vector2.ZERO:
 		facing_direction = input_direction.normalized()
+	
+	# dodge roll / dash trigger
+	if Input.is_action_just_pressed("Dodge") and can_dodge and not isDodging and not isAttacking and not isBlocking:
+		_start_dodge(input_direction)
+		return
+	
+	# If currently dodging, skip standard movement/input overrides
+	if isDodging:
+		velocity = dodge_direction * DODGE_SPEED
+		move_and_slide()
+		return
 	
 	# aply vel
 	if direction_y:
@@ -82,7 +104,7 @@ func _physics_process(delta: float) -> void:
 				player_animation.play("idle_up")
 	
 	# attack animation
-	if Input.is_action_just_pressed("Attack_sword") && isBlocking == false:
+	if Input.is_action_just_pressed("Attack_sword") && isBlocking == false && isDodging == false:
 		isAttacking = true
 		attack_shape.disabled = false
 		var capsule = attack_shape.shape as CapsuleShape2D
@@ -114,8 +136,9 @@ func _physics_process(delta: float) -> void:
 				capsule.height = 38.0
 	
 	# block animation
-	if Input.is_action_just_pressed("Block_sword") && isAttacking == false:
+	if Input.is_action_just_pressed("Block_sword") && isAttacking == false && isDodging == false:
 		isBlocking = true
+		block_start_time = Time.get_ticks_msec() / 1000.0
 		block_shape.disabled = false
 		max_block_time.start()
 		
@@ -146,14 +169,58 @@ func _physics_process(delta: float) -> void:
 	
 	move_and_slide()
 
-func take_damage(amount: int) -> void:
+func _start_dodge(input_dir: Vector2) -> void:
+	isDodging = true
+	can_dodge = false
+	is_invulnerable = true
+	
+	if input_dir != Vector2.ZERO:
+		dodge_direction = input_dir.normalized()
+	else:
+		dodge_direction = facing_direction
+		
+	if abs(dodge_direction.x) > abs(dodge_direction.y):
+		if dodge_direction.x > 0:
+			player_animation.play("walk_right")
+		else:
+			player_animation.play("walk_left")
+	else:
+		if dodge_direction.y > 0:
+			player_animation.play("walk_down")
+		else:
+			player_animation.play("walk_up")
+			
+	if damage_tween and damage_tween.is_running():
+		damage_tween.kill()
+	damage_tween = create_tween()
+	damage_tween.tween_property(player_animation, "modulate:a", 0.45, 0.05)
+	
+	get_tree().create_timer(DODGE_DURATION).timeout.connect(func():
+		if is_instance_valid(self) and not is_dead:
+			isDodging = false
+			is_invulnerable = false
+			player_animation.modulate.a = 1.0
+			get_tree().create_timer(DODGE_COOLDOWN).timeout.connect(func():
+				if is_instance_valid(self):
+					can_dodge = true
+			)
+	)
+
+func take_damage(amount: int, attacker: Node2D = null) -> void:
 	if is_dead or is_invulnerable:
 		return
 	
 	if isBlocking:
-		print("Player blocked the attack!")
-		_flash_block()
-		return
+		var elapsed = (Time.get_ticks_msec() / 1000.0) - block_start_time
+		if elapsed <= PARRY_WINDOW and attacker != null and attacker.has_method("stagger"):
+			print("PARRY! Attack deflected!")
+			_flash_parry()
+			attacker.stagger(1.2)
+			return
+		else:
+			print("Player blocked the attack!")
+			_flash_block()
+			return
 	
 	health = max(0, health - amount)
 	print("Player took damage! Current health: ", health)
@@ -165,6 +232,29 @@ func take_damage(amount: int) -> void:
 		_die()
 	else:
 		_flash_red()
+		_trigger_damage_vignette(0.9)
+
+func _trigger_damage_vignette(target_intensity: float = 0.9) -> void:
+	if not damage_vignette or not damage_vignette.material:
+		return
+	var mat = damage_vignette.material as ShaderMaterial
+	if not mat:
+		return
+	if vignette_tween and vignette_tween.is_running():
+		vignette_tween.kill()
+	
+	mat.set_shader_parameter("intensity", target_intensity)
+	vignette_tween = create_tween()
+	vignette_tween.tween_method(func(val: float):
+		mat.set_shader_parameter("intensity", val)
+	, target_intensity, 0.0, 0.45).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+
+func _flash_parry() -> void:
+	if damage_tween and damage_tween.is_running():
+		damage_tween.kill()
+	player_animation.modulate = Color(2.6, 2.2, 0.4)
+	damage_tween = create_tween()
+	damage_tween.tween_property(player_animation, "modulate", Color.WHITE, 0.18)
 
 func _flash_block() -> void:
 	if damage_tween:
@@ -194,6 +284,11 @@ func _die() -> void:
 	velocity = Vector2.ZERO
 	if damage_tween:
 		damage_tween.kill()
+	
+	if damage_vignette and damage_vignette.material:
+		var mat = damage_vignette.material as ShaderMaterial
+		if mat:
+			mat.set_shader_parameter("intensity", 1.0)
 	
 	player_animation.modulate = Color(1.0, 0.25, 0.25)
 	var death_tween = create_tween()

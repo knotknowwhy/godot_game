@@ -1,4 +1,4 @@
-[gd_scene load_steps=92 format=3 uid="uid://cbm8xpqx7xtqg"]
+[gd_scene format=3 uid="uid://cbm8xpqx7xtqg"]
 
 [ext_resource type="Script" uid="uid://cmnk4rhy8elpj" path="res://scripts/knight.gd" id="1_3i0j8"]
 [ext_resource type="Texture2D" uid="uid://iw3q6hggoea7" path="res://assets/sprites/knight.png" id="1_dp28g"]
