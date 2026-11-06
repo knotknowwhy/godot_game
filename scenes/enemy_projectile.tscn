@@ -1,0 +1,19 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://scripts/enemy_projectile.gd" id="1_proj_script"]
+[ext_resource type="Texture2D" uid="uid://3ak4b08xc1yb" path="res://assets/sprites/projectile_necro.png" id="2_proj_tex"]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_proj"]
+radius = 4.5
+
+[node name="enemy_projectile" type="Area2D"]
+z_index = 2
+collision_layer = 512
+collision_mask = 207
+script = ExtResource("1_proj_script")
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+texture = ExtResource("2_proj_tex")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("CircleShape2D_proj")

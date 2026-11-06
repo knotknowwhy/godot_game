@@ -29,6 +29,11 @@ var speed_multiplier: float = 1.0
 var damage_boost_timer: float = 0.0
 var damage_multiplier: float = 1.0
 
+# Permanent Upgrades from Loot Chests
+var permanent_speed_bonus: float = 0.0
+var permanent_damage_bonus: float = 0.0
+var permanent_lifesteal: int = 0
+
 @export var max_health: int = 100
 var health: int = max_health
 
@@ -131,12 +136,12 @@ func _physics_process(delta: float) -> void:
 	
 	# If currently dodging, skip standard movement/input overrides
 	if isDodging:
-		velocity = dodge_direction * DODGE_SPEED
+		velocity = dodge_direction * (DODGE_SPEED + permanent_speed_bonus * 1.35)
 		move_and_slide()
 		return
 	
-	# aply vel with active speed multiplier
-	var current_speed = SPEED * speed_multiplier
+	# aply vel with active speed multiplier and permanent speed bonus
+	var current_speed = (SPEED + permanent_speed_bonus) * speed_multiplier
 	if direction_y:
 		velocity.y = direction_y * current_speed
 	else:
@@ -339,6 +344,38 @@ func apply_damage_boost(duration: float = 7.0, multiplier: float = 1.5) -> void:
 	damage_boost_timer = maxf(damage_boost_timer, duration)
 	damage_multiplier = multiplier
 	_flash_power_buff()
+
+func get_total_damage_multiplier() -> float:
+	return (1.0 + permanent_damage_bonus) * damage_multiplier
+
+func on_successful_sword_hit() -> void:
+	if permanent_lifesteal > 0 and not is_dead:
+		heal(permanent_lifesteal, false)
+
+func apply_permanent_upgrade(upgrade_id: int) -> Dictionary:
+	shake_camera(3.5, 0.25)
+	match upgrade_id:
+		0:
+			max_health += 35
+			health = mini(max_health, health + 35)
+			if health_bar:
+				health_bar.custom_minimum_size.x += 28
+				health_bar.set_health(health, max_health)
+			_flash_heal()
+			return {"title": "TITAN HEART (+35 MAX HP)", "color": Color(0.35, 1.0, 0.55)}
+		1:
+			permanent_damage_bonus += 0.40
+			_flash_power_buff()
+			return {"title": "RUNIC BROADSWORD (+40% DMG)", "color": Color(1.0, 0.85, 0.3)}
+		2:
+			permanent_speed_bonus += 22.0
+			_flash_speed_buff()
+			return {"title": "WINDWALKER GREAVES (+SPEED)", "color": Color(0.35, 0.9, 1.0)}
+		_:
+			permanent_damage_bonus += 0.30
+			permanent_lifesteal += 5
+			_flash_parry()
+			return {"title": "VAMPIRIC SOULBLADE (+DMG & LIFESTEAL)", "color": Color(1.0, 0.45, 0.78)}
 
 func shake_camera(intensity: float = 4.0, duration: float = 0.2) -> void:
 	if not camera:

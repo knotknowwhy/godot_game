@@ -349,10 +349,15 @@ func _on_hit_area_area_entered(area: Area2D) -> void:
 		if kb_dir == Vector2.ZERO:
 			kb_dir = -facing_direction
 		
-		# Factor in player's active damage boost if applicable
+		# Factor in player's active and permanent damage boosts if applicable
 		var effective_damage = damage_per_hit
-		if player_target and is_instance_valid(player_target) and "damage_multiplier" in player_target:
-			effective_damage = int(damage_per_hit * player_target.damage_multiplier)
+		if player_target and is_instance_valid(player_target):
+			if player_target.has_method("get_total_damage_multiplier"):
+				effective_damage = int(damage_per_hit * player_target.get_total_damage_multiplier())
+			elif "damage_multiplier" in player_target:
+				effective_damage = int(damage_per_hit * player_target.damage_multiplier)
+			if player_target.has_method("on_successful_sword_hit"):
+				player_target.on_successful_sword_hit()
 			
 		take_damage(effective_damage, kb_dir)
 

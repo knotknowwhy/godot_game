@@ -1,0 +1,21 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://scripts/loot_chest.gd" id="1_chest_script"]
+[ext_resource type="Texture2D" uid="uid://xxmapap0t68b" path="res://assets/sprites/loot_chest.png" id="2_chest_tex"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_chest"]
+size = Vector2(24, 20)
+
+[node name="loot_chest" type="Area2D"]
+z_index = 1
+collision_layer = 0
+collision_mask = 6
+script = ExtResource("1_chest_script")
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+texture = ExtResource("2_chest_tex")
+hframes = 2
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+position = Vector2(0, 2)
+shape = SubResource("RectangleShape2D_chest")

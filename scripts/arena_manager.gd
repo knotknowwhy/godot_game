@@ -5,52 +5,153 @@ signal wave_started(wave_number: int)
 signal wave_cleared(wave_number: int)
 signal arena_completed
 
+@export var room_id: int = 1
 @export var door_node: Node2D
+@export var unlock_doors: Array[NodePath] = []
 @export var entities_container: Node
-@export var enemy_scene: PackedScene = preload("res://scenes/skeleton.tscn")
-@export var countdown_seconds: int = 5
-@export var wave_intermission_seconds: float = 2.0
+@export var countdown_seconds: int = 3
+@export var wave_intermission_seconds: float = 1.6
+
+const SKELETON_SCENE = preload("res://scenes/skeleton.tscn")
+const WITCH_DOCTOR_SCENE = preload("res://scenes/witch_doctor.tscn")
+const PYROMANCER_SCENE = preload("res://scenes/pyromancer.tscn")
+const LOOT_CHEST_SCENE = preload("res://scenes/loot_chest.tscn")
 
 @onready var hud_layer: CanvasLayer = $arena_hud
 @onready var announcement_label: Label = $arena_hud/center_anchor/announcement_label
 
-var waves: Array = [
-	{
-		"name": "Wave 1",
-		"spawns": [
-			Vector2(-75, 25),
-			Vector2(85, 15)
-		]
-	},
-	{
-		"name": "Wave 2",
-		"spawns": [
-			Vector2(-70, -15),
-			Vector2(85, -15),
-			Vector2(10, 65)
-		]
-	}
-]
+var waves: Array = []
+var chest_spawn_pos: Vector2 = Vector2(8, 12)
+var chest_upgrade_id: int = 0
+var trigger_rect: Rect2 = Rect2()
 
 var current_wave_index: int = 0
 var active_enemies: Array[Node2D] = []
 var is_arena_active: bool = false
 var is_arena_cleared: bool = false
+var has_triggered: bool = false
 var current_tween: Tween = null
 
 func _ready() -> void:
 	if not entities_container:
 		entities_container = get_parent().get_node_or_null("entities")
-	if not door_node:
+	if not door_node and room_id == 1:
 		door_node = get_parent().get_node_or_null("sliding_door")
 	
 	if announcement_label:
 		announcement_label.visible = false
 	
-	# Start countdown sequence after scene stabilization
-	get_tree().create_timer(0.8).timeout.connect(func():
-		_start_wave_intro(current_wave_index)
-	)
+	_configure_room()
+	
+	if room_id == 1:
+		has_triggered = true
+		get_tree().create_timer(0.8).timeout.connect(func():
+			_start_wave_intro(current_wave_index)
+		)
+
+func _configure_room() -> void:
+	match room_id:
+		1:
+			countdown_seconds = 5
+			chest_spawn_pos = Vector2(8, 10)
+			chest_upgrade_id = 0
+			waves = [
+				{
+					"name": "Wave 1",
+					"spawns": [
+						{"pos": Vector2(-75, 25), "type": "skeleton"},
+						{"pos": Vector2(85, 15), "type": "skeleton"}
+					]
+				},
+				{
+					"name": "Wave 2",
+					"spawns": [
+						{"pos": Vector2(-70, -15), "type": "skeleton"},
+						{"pos": Vector2(85, -15), "type": "skeleton"},
+						{"pos": Vector2(8, 52), "type": "witch_doctor"}
+					]
+				}
+			]
+		2:
+			countdown_seconds = 3
+			chest_spawn_pos = Vector2(4, -156)
+			chest_upgrade_id = 1
+			trigger_rect = Rect2(-155, -225, 295, 118)
+			waves = [
+				{
+					"name": "Wave 1",
+					"spawns": [
+						{"pos": Vector2(-95, -135), "type": "skeleton"},
+						{"pos": Vector2(92, -135), "type": "skeleton"},
+						{"pos": Vector2(4, -198), "type": "witch_doctor"}
+					]
+				},
+				{
+					"name": "Wave 2",
+					"spawns": [
+						{"pos": Vector2(-102, -195), "type": "witch_doctor"},
+						{"pos": Vector2(96, -195), "type": "pyromancer"},
+						{"pos": Vector2(-40, -130), "type": "skeleton"}
+					]
+				}
+			]
+		3:
+			countdown_seconds = 3
+			chest_spawn_pos = Vector2(4, -346)
+			chest_upgrade_id = 2
+			trigger_rect = Rect2(-155, -418, 295, 132)
+			waves = [
+				{
+					"name": "Wave 1",
+					"spawns": [
+						{"pos": Vector2(-98, -315), "type": "witch_doctor"},
+						{"pos": Vector2(92, -315), "type": "witch_doctor"},
+						{"pos": Vector2(4, -390), "type": "skeleton"}
+					]
+				},
+				{
+					"name": "Wave 2",
+					"spawns": [
+						{"pos": Vector2(-100, -390), "type": "pyromancer"},
+						{"pos": Vector2(96, -390), "type": "skeleton"},
+						{"pos": Vector2(-55, -310), "type": "skeleton"},
+						{"pos": Vector2(65, -310), "type": "witch_doctor"}
+					]
+				}
+			]
+		4:
+			countdown_seconds = 3
+			chest_spawn_pos = Vector2(392, -376)
+			chest_upgrade_id = 3
+			trigger_rect = Rect2(262, -450, 256, 138)
+			waves = [
+				{
+					"name": "Wave 1",
+					"spawns": [
+						{"pos": Vector2(305, -345), "type": "pyromancer"},
+						{"pos": Vector2(475, -345), "type": "pyromancer"},
+						{"pos": Vector2(392, -418), "type": "skeleton"}
+					]
+				},
+				{
+					"name": "Wave 2",
+					"spawns": [
+						{"pos": Vector2(300, -420), "type": "pyromancer"},
+						{"pos": Vector2(480, -420), "type": "witch_doctor"},
+						{"pos": Vector2(345, -335), "type": "skeleton"},
+						{"pos": Vector2(440, -335), "type": "skeleton"}
+					]
+				}
+			]
+
+func _physics_process(_delta: float) -> void:
+	if has_triggered or is_arena_cleared or room_id == 1:
+		return
+	var player = get_tree().get_first_node_in_group("player")
+	if player and is_instance_valid(player):
+		if trigger_rect.has_point(player.global_position):
+			has_triggered = true
+			_start_wave_intro(current_wave_index)
 
 func _start_wave_intro(wave_idx: int) -> void:
 	is_arena_active = true
@@ -59,20 +160,17 @@ func _start_wave_intro(wave_idx: int) -> void:
 	var wave_num = wave_idx + 1
 	var total_waves = waves.size()
 	
-	# Pure text pop-up: "Wave 1/2 starts"
-	_pop_text("Wave %d/%d starts" % [wave_num, total_waves], Color.WHITE, 26, 1.2, func():
+	_pop_text("Wave %d/%d starts" % [wave_num, total_waves], Color.WHITE, 26, 1.0, func():
 		_start_countdown(countdown_seconds, wave_idx)
 	)
 
 func _start_countdown(seconds_left: int, wave_idx: int) -> void:
 	if seconds_left > 0:
-		# Numbers "5", "4", "3", "2", "1" replacing each other
-		_pop_text("%d" % seconds_left, Color.WHITE, 38, 0.85, func():
+		_pop_text("%d" % seconds_left, Color.WHITE, 38, 0.75, func():
 			_start_countdown(seconds_left - 1, wave_idx)
 		)
 	else:
-		# Final short punch "FIGHT!" that fades and disappears
-		_pop_text("FIGHT!", Color(1.0, 0.9, 0.45), 32, 0.45, func():
+		_pop_text("FIGHT!", Color(1.0, 0.9, 0.45), 32, 0.4, func():
 			_fade_out_announcement(func():
 				_spawn_wave(wave_idx)
 			)
@@ -83,20 +181,28 @@ func _spawn_wave(wave_idx: int) -> void:
 	var wave_num = wave_idx + 1
 	wave_started.emit(wave_num)
 	
-	var spawn_points: Array = wave_data["spawns"]
+	var spawn_entries: Array = wave_data["spawns"]
 	active_enemies.clear()
 	
-	for spawn_pos in spawn_points:
-		_spawn_enemy(spawn_pos)
+	for entry in spawn_entries:
+		if entry is Dictionary:
+			_spawn_enemy(entry["pos"], entry.get("type", "skeleton"))
+		elif entry is Vector2:
+			_spawn_enemy(entry, "skeleton")
 
-func _spawn_enemy(pos: Vector2) -> void:
-	if not enemy_scene or not entities_container:
+func _spawn_enemy(pos: Vector2, enemy_type: String = "skeleton") -> void:
+	if not entities_container:
 		return
 	
-	var enemy = enemy_scene.instantiate() as CharacterBody2D
+	var scene_to_spawn: PackedScene = SKELETON_SCENE
+	if enemy_type == "witch_doctor":
+		scene_to_spawn = WITCH_DOCTOR_SCENE
+	elif enemy_type == "pyromancer":
+		scene_to_spawn = PYROMANCER_SCENE
+	
+	var enemy = scene_to_spawn.instantiate() as CharacterBody2D
 	enemy.global_position = pos
 	
-	# Visual flare (red summon flash + pop-in scale)
 	enemy.scale = Vector2(0.2, 0.2)
 	enemy.modulate = Color(2.5, 0.4, 0.4, 0.0)
 	
@@ -110,7 +216,6 @@ func _spawn_enemy(pos: Vector2) -> void:
 		.set_ease(Tween.EASE_OUT)
 	spawn_tween.tween_property(enemy, "modulate", Color.WHITE, 0.4)
 	
-	# Connect to death notification
 	if enemy.has_signal("enemy_died"):
 		enemy.enemy_died.connect(_on_enemy_defeated)
 	else:
@@ -128,8 +233,7 @@ func _on_wave_cleared() -> void:
 	wave_cleared.emit(wave_num)
 	
 	if current_wave_index + 1 < waves.size():
-		# Show short wave cleared notice, then advance
-		_pop_text("Wave %d Cleared!" % wave_num, Color(0.4, 1.0, 0.5), 26, 1.3, func():
+		_pop_text("Wave %d Cleared!" % wave_num, Color(0.4, 1.0, 0.5), 26, 1.2, func():
 			current_wave_index += 1
 			_start_wave_intro(current_wave_index)
 		)
@@ -141,14 +245,30 @@ func _on_all_waves_cleared() -> void:
 	is_arena_active = false
 	arena_completed.emit()
 	
-	# Open sliding door
+	# Spawn Loot Chest with permanent character upgrade
+	_spawn_loot_chest()
+	
+	# Open primary room exit door
 	if door_node and door_node.has_method("open_door"):
 		door_node.open_door()
 	
-	# "Room Cleared!" announcement that fades out cleanly
-	_pop_text("Room Cleared!", Color(1.0, 0.9, 0.4), 30, 2.0, func():
+	# Unlock any proximity hallway doors connected to this room
+	for d_path in unlock_doors:
+		var d = get_node_or_null(d_path)
+		if d and d.has_method("unlock_door"):
+			d.unlock_door()
+	
+	_pop_text("Room Cleared! Chest Spawned!", Color(1.0, 0.9, 0.4), 26, 2.0, func():
 		_fade_out_announcement()
 	)
+
+func _spawn_loot_chest() -> void:
+	if not LOOT_CHEST_SCENE or not entities_container:
+		return
+	var chest = LOOT_CHEST_SCENE.instantiate()
+	chest.global_position = chest_spawn_pos
+	chest.upgrade_id = chest_upgrade_id
+	entities_container.call_deferred("add_child", chest)
 
 func _pop_text(msg: String, color: Color, font_size: int, duration: float, on_complete: Callable = Callable()) -> void:
 	if not announcement_label:
@@ -164,7 +284,6 @@ func _pop_text(msg: String, color: Color, font_size: int, duration: float, on_co
 	if current_tween and current_tween.is_running():
 		current_tween.kill()
 	
-	# Scale punch pop-in from center
 	announcement_label.scale = Vector2(1.3, 1.3)
 	current_tween = create_tween()
 	current_tween.tween_property(announcement_label, "scale", Vector2.ONE, 0.15)\
