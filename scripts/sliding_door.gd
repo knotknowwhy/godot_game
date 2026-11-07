@@ -46,7 +46,7 @@ func _ready() -> void:
 			collision_shape.set_deferred("disabled", true)
 		_reveal_mist(true)
 	else:
-		z_index = 2
+		z_index = 0
 		if door_sprite:
 			door_sprite.position.y = initial_sprite_y
 		if collision_shape:
@@ -63,7 +63,8 @@ func _init_fade_shader() -> void:
 	door_sprite.material = _fade_mat
 
 func _on_fade_body_entered(body: Node2D) -> void:
-	if (body is CharacterBody2D or body.is_in_group("player") or body.is_in_group("enemies")) and not _inside_bodies.has(body):
+	# Only player triggers gate fade when behind it, never enemies
+	if (body.is_in_group("player") or body.name == "player") and not _inside_bodies.has(body):
 		_inside_bodies.append(body)
 	_update_fade_state()
 
@@ -74,6 +75,7 @@ func _on_fade_body_exited(body: Node2D) -> void:
 
 func _update_fade_state() -> void:
 	if is_open:
+		z_index = 0
 		_fade_to(0.0)
 		return
 	
@@ -83,6 +85,7 @@ func _update_fade_state() -> void:
 		z_index = 2
 		_fade_to(1.0)
 	else:
+		z_index = 0
 		_fade_to(0.0)
 
 func _fade_to(target_val: float) -> void:
@@ -99,22 +102,11 @@ func _physics_process(delta: float) -> void:
 	if is_open:
 		return
 	
-	# Update radial fade position to the closest character (prioritizing player if inside)
+	# Update radial fade position to the player
 	if not _inside_bodies.is_empty() and _fade_mat:
-		var focus_pos = Vector2.ZERO
-		var player = null
-		for b in _inside_bodies:
-			if is_instance_valid(b) and (b.is_in_group("player") or b.name == "player"):
-				player = b
-				break
-		if player:
-			focus_pos = player.global_position
-		else:
-			_inside_bodies = _inside_bodies.filter(func(b): return is_instance_valid(b))
-			if not _inside_bodies.is_empty():
-				focus_pos = _inside_bodies[0].global_position
-		if focus_pos != Vector2.ZERO:
-			_fade_mat.set_shader_parameter("player_pos", focus_pos)
+		var player = get_tree().get_first_node_in_group("player")
+		if player and is_instance_valid(player):
+			_fade_mat.set_shader_parameter("player_pos", player.global_position)
 	
 	# Subtle golden invitation shimmer when a proximity gate is unlocked and ready to open
 	if open_on_proximity and not is_locked and door_sprite and _inside_bodies.is_empty():
@@ -210,7 +202,7 @@ func open_door() -> void:
 
 func close_door() -> void:
 	_ensure_references()
-	z_index = 2
+	_update_fade_state()
 	if collision_shape:
 		collision_shape.set_deferred("disabled", false)
 	

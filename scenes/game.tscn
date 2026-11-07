@@ -8,7 +8,7 @@
 [ext_resource type="PackedScene" path="res://scenes/sliding_door.tscn" id="6_door"]
 [ext_resource type="PackedScene" path="res://scenes/arena_manager.tscn" id="7_arena"]
 [ext_resource type="PackedScene" path="res://scenes/side_sliding_door.tscn" id="8_side_door"]
-[ext_resource type="Shader" path="res://shaders/darkness_mist.gdshader" id="9_mist_shader"]
+[ext_resource type="Shader" uid="uid://do37p2pu5ab34" path="res://shaders/darkness_mist.gdshader" id="9_mist_shader"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_north_wall"]
 size = Vector2(336, 9.5)
@@ -92,6 +92,9 @@ size = Vector2(36, 48)
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_enemy_south_boss"]
 size = Vector2(284, 48)
 
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_we6vb"]
+size = Vector2(274, 44)
+
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_inter_fade_trigger"]
 size = Vector2(304, 48)
 
@@ -101,11 +104,12 @@ size = Vector2(304, 44)
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_qilfb"]
 size = Vector2(112, 48)
 
-[sub_resource type="RectangleShape2D" id="RectangleShape2D_we6vb"]
-size = Vector2(274, 44)
-
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_mist"]
 shader = ExtResource("9_mist_shader")
+shader_parameter/base_color = Color(0.02, 0.02, 0.035, 0.985)
+shader_parameter/mist_highlight = Color(0.09, 0.08, 0.14, 1)
+shader_parameter/swirl_speed = 0.35
+shader_parameter/density = 1.0
 
 [node name="game" type="Node2D" unique_id=17174621]
 
@@ -148,7 +152,7 @@ shape = SubResource("RectangleShape2D_east_wall")
 position = Vector2(154, -240)
 shape = SubResource("RectangleShape2D_765ca")
 
-[node name="east_wall_col_3" type="CollisionShape2D" parent="world before player render/room_boundaries"]
+[node name="east_wall_col_3" type="CollisionShape2D" parent="world before player render/room_boundaries" unique_id=2025401637]
 position = Vector2(154, -386)
 shape = SubResource("RectangleShape2D_east_wall_3")
 
@@ -168,19 +172,19 @@ shape = SubResource("RectangleShape2D_arch_left_pillar")
 position = Vector2(40, -64)
 shape = SubResource("RectangleShape2D_arch_right_pillar")
 
-[node name="div_room2_3_left_col" type="CollisionShape2D" parent="world before player render/room_boundaries"]
+[node name="div_room2_3_left_col" type="CollisionShape2D" parent="world before player render/room_boundaries" unique_id=297729346]
 position = Vector2(-96, -224)
 shape = SubResource("RectangleShape2D_div_left_base")
 
-[node name="div_room2_3_right_col" type="CollisionShape2D" parent="world before player render/room_boundaries"]
+[node name="div_room2_3_right_col" type="CollisionShape2D" parent="world before player render/room_boundaries" unique_id=1425169811]
 position = Vector2(96, -224)
 shape = SubResource("RectangleShape2D_div_right_base")
 
-[node name="arch_room2_3_left_pillar" type="CollisionShape2D" parent="world before player render/room_boundaries"]
+[node name="arch_room2_3_left_pillar" type="CollisionShape2D" parent="world before player render/room_boundaries" unique_id=920173726]
 position = Vector2(-24, -240)
 shape = SubResource("RectangleShape2D_arch_left_pillar")
 
-[node name="arch_room2_3_right_pillar" type="CollisionShape2D" parent="world before player render/room_boundaries"]
+[node name="arch_room2_3_right_pillar" type="CollisionShape2D" parent="world before player render/room_boundaries" unique_id=1498383541]
 position = Vector2(40, -240)
 shape = SubResource("RectangleShape2D_arch_right_pillar")
 
@@ -192,11 +196,11 @@ shape = SubResource("RectangleShape2D_lnu2h")
 position = Vector2(202, -188)
 shape = SubResource("RectangleShape2D_north_tun1")
 
-[node name="south_tun2_col" type="CollisionShape2D" parent="world before player render/room_boundaries"]
+[node name="south_tun2_col" type="CollisionShape2D" parent="world before player render/room_boundaries" unique_id=1286373812]
 position = Vector2(202, -287.5)
 shape = SubResource("RectangleShape2D_lnu2h")
 
-[node name="north_tun2_col" type="CollisionShape2D" parent="world before player render/room_boundaries"]
+[node name="north_tun2_col" type="CollisionShape2D" parent="world before player render/room_boundaries" unique_id=622007746]
 position = Vector2(202, -380)
 shape = SubResource("RectangleShape2D_north_tun1")
 
@@ -204,7 +208,7 @@ shape = SubResource("RectangleShape2D_north_tun1")
 position = Vector2(253.5, -239.5)
 shape = SubResource("RectangleShape2D_u5sy4")
 
-[node name="west_room4_top" type="CollisionShape2D" parent="world before player render/room_boundaries"]
+[node name="west_room4_top" type="CollisionShape2D" parent="world before player render/room_boundaries" unique_id=347432254]
 position = Vector2(253.5, -404)
 shape = SubResource("RectangleShape2D_west_room4_top")
 
@@ -212,7 +216,7 @@ shape = SubResource("RectangleShape2D_west_room4_top")
 position = Vector2(253.25, -66)
 shape = SubResource("RectangleShape2D_gee14")
 
-[node name="north_room4_wall" type="CollisionShape2D" parent="world before player render/room_boundaries"]
+[node name="north_room4_wall" type="CollisionShape2D" parent="world before player render/room_boundaries" unique_id=445874455]
 position = Vector2(390.375, -451)
 shape = SubResource("RectangleShape2D_0tnpc")
 
@@ -220,15 +224,15 @@ shape = SubResource("RectangleShape2D_0tnpc")
 position = Vector2(350, -256)
 shape = SubResource("RectangleShape2D_room4_boss_left")
 
-[node name="north_boss_wall_right" type="CollisionShape2D" parent="world before player render/room_boundaries"]
+[node name="north_boss_wall_right" type="CollisionShape2D" parent="world before player render/room_boundaries" unique_id=933724127]
 position = Vector2(514, -256)
 shape = SubResource("RectangleShape2D_room4_boss_right")
 
-[node name="arch_room4_boss_left_pillar" type="CollisionShape2D" parent="world before player render/room_boundaries"]
+[node name="arch_room4_boss_left_pillar" type="CollisionShape2D" parent="world before player render/room_boundaries" unique_id=1216504895]
 position = Vector2(440, -272)
 shape = SubResource("RectangleShape2D_arch_left_pillar")
 
-[node name="arch_room4_boss_right_pillar" type="CollisionShape2D" parent="world before player render/room_boundaries"]
+[node name="arch_room4_boss_right_pillar" type="CollisionShape2D" parent="world before player render/room_boundaries" unique_id=1086894171]
 position = Vector2(504, -272)
 shape = SubResource("RectangleShape2D_arch_right_pillar")
 
@@ -244,39 +248,39 @@ shape = SubResource("RectangleShape2D_n07xf")
 position = Vector2(744, -154)
 shape = SubResource("ConvexPolygonShape2D_xa3n1")
 
-[node name="enemy_south_wall_blockers" type="StaticBody2D" parent="world before player render"]
+[node name="enemy_south_wall_blockers" type="StaticBody2D" parent="world before player render" unique_id=1261981612]
 collision_layer = 2048
 collision_mask = 0
 
-[node name="enemy_room1_south" type="CollisionShape2D" parent="world before player render/enemy_south_wall_blockers"]
+[node name="enemy_room1_south" type="CollisionShape2D" parent="world before player render/enemy_south_wall_blockers" unique_id=1552065418]
 position = Vector2(-8, 104)
 shape = SubResource("RectangleShape2D_enemy_south_room1")
 
-[node name="enemy_room2_south_left" type="CollisionShape2D" parent="world before player render/enemy_south_wall_blockers"]
+[node name="enemy_room2_south_left" type="CollisionShape2D" parent="world before player render/enemy_south_wall_blockers" unique_id=368826354]
 position = Vector2(-96, -72)
 shape = SubResource("RectangleShape2D_enemy_div_left")
 
-[node name="enemy_room2_south_right" type="CollisionShape2D" parent="world before player render/enemy_south_wall_blockers"]
+[node name="enemy_room2_south_right" type="CollisionShape2D" parent="world before player render/enemy_south_wall_blockers" unique_id=1559867405]
 position = Vector2(92, -72)
 shape = SubResource("RectangleShape2D_enemy_div_right")
 
-[node name="enemy_room3_south_left" type="CollisionShape2D" parent="world before player render/enemy_south_wall_blockers"]
+[node name="enemy_room3_south_left" type="CollisionShape2D" parent="world before player render/enemy_south_wall_blockers" unique_id=2140827820]
 position = Vector2(-96, -248)
 shape = SubResource("RectangleShape2D_enemy_div_left")
 
-[node name="enemy_room3_south_right" type="CollisionShape2D" parent="world before player render/enemy_south_wall_blockers"]
+[node name="enemy_room3_south_right" type="CollisionShape2D" parent="world before player render/enemy_south_wall_blockers" unique_id=1548939005]
 position = Vector2(92, -248)
 shape = SubResource("RectangleShape2D_enemy_div_right")
 
-[node name="enemy_room4_south_left" type="CollisionShape2D" parent="world before player render/enemy_south_wall_blockers"]
+[node name="enemy_room4_south_left" type="CollisionShape2D" parent="world before player render/enemy_south_wall_blockers" unique_id=1342317496]
 position = Vector2(350, -280)
 shape = SubResource("RectangleShape2D_enemy_r4_left")
 
-[node name="enemy_room4_south_right" type="CollisionShape2D" parent="world before player render/enemy_south_wall_blockers"]
+[node name="enemy_room4_south_right" type="CollisionShape2D" parent="world before player render/enemy_south_wall_blockers" unique_id=208938645]
 position = Vector2(514, -280)
 shape = SubResource("RectangleShape2D_enemy_r4_right")
 
-[node name="enemy_boss_south" type="CollisionShape2D" parent="world before player render/enemy_south_wall_blockers"]
+[node name="enemy_boss_south" type="CollisionShape2D" parent="world before player render/enemy_south_wall_blockers" unique_id=152736904]
 position = Vector2(394, -56)
 shape = SubResource("RectangleShape2D_enemy_south_boss")
 
@@ -294,17 +298,17 @@ zoom = Vector2(4.98, 4.98)
 
 [node name="world after player render" type="Node" parent="." unique_id=745768844]
 
-[node name="foreground_room4_boss_wall" type="TileMapLayer" parent="world after player render"]
+[node name="foreground_room4_boss_wall" type="TileMapLayer" parent="world after player render" unique_id=2135180829]
 tile_map_data = PackedByteArray("AAAPAO3/AAABAAcAAAAQAO3/AAAFAAcAAAARAO3/AAAGAAcAAAASAO3/AAAHAAcAAAATAO3/AAAIAAcAAAAUAO3/AAAFAAcAAAAVAO3/AAAGAAcAAAAWAO3/AAAHAAcAAAAXAO3/AAAIAAcAAAAYAO3/AAAFAAcAAAAZAO3/AAAGAAcAAAAaAO3/AAAHAAcAAAAfAO3/AAAIAAcAAAAgAO3/AAAFAAcAAAAhAO3/AAASAAcAAAAPAO7/AAABAAgAAAAQAO7/AAAFAAgAAAARAO7/AAAGAAgAAAASAO7/AAAHAAgAAAATAO7/AAAIAAgAAAAUAO7/AAAFAAgAAAAVAO7/AAAGAAgAAAAWAO7/AAAHAAgAAAAXAO7/AAAIAAgAAAAYAO7/AAAFAAgAAAAZAO7/AAAGAAgAAAAaAO7/AAAHAAgAAAAfAO7/AAAIAAgAAAAgAO7/AAAFAAgAAAAhAO7/AAASAAgAAAAPAO//AAABAAkAAAAQAO//AAAFAAkAAAARAO//AAAGAAkAAAASAO//AAAHAAkAAAATAO//AAAIAAkAAAAUAO//AAAFAAkAAAAVAO//AAAGAAkAAAAWAO//AAAHAAkAAAAXAO//AAAIAAkAAAAYAO//AAAFAAkAAAAZAO//AAAGAAkAAAAaAO//AAAHAAkAAAAfAO//AAAIAAkAAAAgAO//AAAFAAkAAAAhAO//AAASAAkAAAA=")
 tile_set = ExtResource("1_lnu2h")
 
-[node name="room4_boss_fade_trigger" type="Area2D" parent="world after player render"]
+[node name="room4_boss_fade_trigger" type="Area2D" parent="world after player render" unique_id=592538942]
 collision_layer = 0
 collision_mask = 4098
 script = ExtResource("3_fade")
 target_wall_path = NodePath("../foreground_room4_boss_wall")
 
-[node name="trigger_shape" type="CollisionShape2D" parent="world after player render/room4_boss_fade_trigger"]
+[node name="trigger_shape" type="CollisionShape2D" parent="world after player render/room4_boss_fade_trigger" unique_id=1150614565]
 position = Vector2(392, -280)
 shape = SubResource("RectangleShape2D_we6vb")
 
@@ -331,17 +335,17 @@ target_wall_path = NodePath("../foreground_intermediary_wall")
 position = Vector2(-8, -72)
 shape = SubResource("RectangleShape2D_inter_fade_trigger")
 
-[node name="foreground_room2_3_wall" type="TileMapLayer" parent="world after player render"]
+[node name="foreground_room2_3_wall" type="TileMapLayer" parent="world after player render" unique_id=780778147]
 tile_map_data = PackedByteArray("AAD1/+//AAABAAcAAAD2/+//AAAHAAcAAAD3/+//AAAIAAcAAAD4/+//AAAFAAcAAAD5/+//AAAGAAcAAAD6/+//AAAHAAcAAAD7/+//AAAIAAcAAAD8/+//AAAFAAcAAAD9/+//AAAGAAcAAAADAO//AAAIAAcAAAAEAO//AAAFAAcAAAAFAO//AAAGAAcAAAAGAO//AAAHAAcAAAAHAO//AAAIAAcAAAAIAO//AAAFAAcAAAAJAO//AAASAAcAAAD1//D/AAABAAgAAAD2//D/AAAHAAgAAAD3//D/AAAIAAgAAAD4//D/AAAFAAgAAAD5//D/AAAGAAgAAAD6//D/AAAHAAgAAAD7//D/AAAIAAgAAAD8//D/AAAFAAgAAAD9//D/AAAGAAgAAAADAPD/AAAIAAgAAAAEAPD/AAAFAAgAAAAFAPD/AAAGAAgAAAAGAPD/AAAHAAgAAAAHAPD/AAAIAAgAAAAIAPD/AAAFAAgAAAAJAPD/AAASAAgAAAD1//H/AAABAAkAAAD2//H/AAAHAAkAAAD3//H/AAAIAAkAAAD4//H/AAAFAAkAAAD5//H/AAAGAAkAAAD6//H/AAAHAAkAAAD7//H/AAAIAAkAAAD8//H/AAAFAAkAAAD9//H/AAAGAAkAAAADAPH/AAAIAAkAAAAEAPH/AAAFAAkAAAAFAPH/AAAGAAkAAAAGAPH/AAAHAAkAAAAHAPH/AAAIAAkAAAAIAPH/AAAFAAkAAAAJAPH/AAASAAkAAAA=")
 tile_set = ExtResource("1_lnu2h")
 
-[node name="room2_3_fade_trigger" type="Area2D" parent="world after player render"]
+[node name="room2_3_fade_trigger" type="Area2D" parent="world after player render" unique_id=2058659685]
 collision_layer = 0
 collision_mask = 4098
 script = ExtResource("3_fade")
 target_wall_path = NodePath("../foreground_room2_3_wall")
 
-[node name="trigger_shape" type="CollisionShape2D" parent="world after player render/room2_3_fade_trigger"]
+[node name="trigger_shape" type="CollisionShape2D" parent="world after player render/room2_3_fade_trigger" unique_id=1617953702]
 position = Vector2(-8, -248)
 shape = SubResource("RectangleShape2D_inter_fade_trigger")
 
@@ -391,24 +395,24 @@ target_wall = NodePath("../foreground_tun1_southwall")
 position = Vector2(178, -104)
 shape = SubResource("RectangleShape2D_qilfb")
 
-[node name="foreground_tun2_southwall" type="TileMapLayer" parent="world after player render"]
+[node name="foreground_tun2_southwall" type="TileMapLayer" parent="world after player render" unique_id=907316231]
 tile_map_data = PackedByteArray("AAAKAOv/AAACAAoAAFALAOv/AAACAAkAAFAMAOv/AAACAAgAAFANAOv/AAACAAoAAFAOAOv/AAACAAkAAFAKAOz/AAAGAAoAAAALAOz/AAAHAAoAAAAMAOz/AAAGAAoAAAANAOz/AAAHAAoAAAAOAOz/AAAGAAoAAAAKAO3/AAAFAAkAAAALAO3/AAAGAAkAAAAMAO3/AAAHAAkAAAANAO3/AAAFAAkAAAAOAO3/AAAGAAkAAAA=")
 tile_set = ExtResource("1_lnu2h")
 
-[node name="background_foreground_tun2_southwall2" type="TileMapLayer" parent="world after player render/foreground_tun2_southwall"]
+[node name="background_foreground_tun2_southwall2" type="TileMapLayer" parent="world after player render/foreground_tun2_southwall" unique_id=1395598076]
 z_index = -1
 z_as_relative = false
 tile_map_data = PackedByteArray("AAAJAOj/AAAIAAkAAAAJAOn/AAAIAAoAAAAJAOv/AAAGAAkAAAAPAOv/AAAGAAkAAAAJAOz/AAAGAAoAAAAPAOz/AAAGAAoAAAAJAO3/AAAGAAoAAAAPAO3/AAAGAAoAAAA=")
 tile_set = ExtResource("1_lnu2h")
 
-[node name="tunnel2_fade_trigger" type="Area2D" parent="world after player render" node_paths=PackedStringArray("target_wall")]
+[node name="tunnel2_fade_trigger" type="Area2D" parent="world after player render" unique_id=1977352121 node_paths=PackedStringArray("target_wall")]
 position = Vector2(24, -207)
 collision_layer = 0
 collision_mask = 4098
 script = ExtResource("3_fade")
 target_wall = NodePath("../foreground_tun2_southwall")
 
-[node name="trigger_shape" type="CollisionShape2D" parent="world after player render/tunnel2_fade_trigger"]
+[node name="trigger_shape" type="CollisionShape2D" parent="world after player render/tunnel2_fade_trigger" unique_id=1853689443]
 position = Vector2(178, -104)
 shape = SubResource("RectangleShape2D_qilfb")
 
@@ -440,69 +444,69 @@ position = Vector2(-43, -72)
 [node name="spikes2" parent="traps/spikes" unique_id=2112732714 instance=ExtResource("4_lbhrr")]
 position = Vector2(57, -36)
 
-[node name="darkness_mists" type="Node2D" parent="."]
+[node name="darkness_mists" type="Node2D" parent="." unique_id=630676913]
 z_index = 10
 
-[node name="mist_room2" type="ColorRect" parent="darkness_mists"]
+[node name="mist_room2" type="ColorRect" parent="darkness_mists" unique_id=640235943]
 material = SubResource("ShaderMaterial_mist")
 offset_left = -176.0
-offset_top = -244.0
+offset_top = -276.0
 offset_right = 176.0
 offset_bottom = -96.0
 mouse_filter = 2
 color = Color(0.02, 0.02, 0.04, 1)
 
-[node name="mist_hallway1" type="ColorRect" parent="darkness_mists"]
+[node name="mist_hallway1" type="ColorRect" parent="darkness_mists" unique_id=916932011]
 material = SubResource("ShaderMaterial_mist")
 offset_left = 152.0
-offset_top = -160.0
-offset_right = 244.0
-offset_bottom = -96.0
+offset_top = -208.0
+offset_right = 260.0
+offset_bottom = -94.0
 mouse_filter = 2
 color = Color(0.02, 0.02, 0.04, 1)
 
-[node name="mist_boss_room" type="ColorRect" parent="darkness_mists"]
+[node name="mist_boss_room" type="ColorRect" parent="darkness_mists" unique_id=1188563286]
 material = SubResource("ShaderMaterial_mist")
-offset_left = 256.0
-offset_top = -256.0
-offset_right = 538.0
-offset_bottom = -30.0
+offset_left = 242.0
+offset_top = -267.0
+offset_right = 546.0
+offset_bottom = -24.0
 mouse_filter = 2
 color = Color(0.02, 0.02, 0.04, 1)
 
-[node name="mist_room4_boss_wall" type="ColorRect" parent="darkness_mists"]
+[node name="mist_room4_boss_wall" type="ColorRect" parent="darkness_mists" unique_id=1008099772]
 material = SubResource("ShaderMaterial_mist")
-offset_left = 256.0
+offset_left = 239.0
 offset_top = -304.0
-offset_right = 538.0
+offset_right = 543.0
 offset_bottom = -256.0
 mouse_filter = 2
 color = Color(0.02, 0.02, 0.04, 1)
 
-[node name="mist_room3" type="ColorRect" parent="darkness_mists"]
+[node name="mist_room3" type="ColorRect" parent="darkness_mists" unique_id=981492825]
 material = SubResource("ShaderMaterial_mist")
 offset_left = -176.0
 offset_top = -464.0
-offset_right = 176.0
-offset_bottom = -272.0
+offset_right = 163.0
+offset_bottom = -259.0
 mouse_filter = 2
 color = Color(0.02, 0.02, 0.04, 1)
 
-[node name="mist_hallway2" type="ColorRect" parent="darkness_mists"]
+[node name="mist_hallway2" type="ColorRect" parent="darkness_mists" unique_id=2113185755]
 material = SubResource("ShaderMaterial_mist")
-offset_left = 152.0
-offset_top = -352.0
-offset_right = 244.0
-offset_bottom = -288.0
+offset_left = 145.0
+offset_top = -406.0
+offset_right = 261.0
+offset_bottom = -280.0
 mouse_filter = 2
 color = Color(0.02, 0.02, 0.04, 1)
 
-[node name="mist_room4" type="ColorRect" parent="darkness_mists"]
+[node name="mist_room4" type="ColorRect" parent="darkness_mists" unique_id=1809454354]
 material = SubResource("ShaderMaterial_mist")
-offset_left = 256.0
+offset_left = 241.0
 offset_top = -496.0
 offset_right = 538.0
-offset_bottom = -304.0
+offset_bottom = -294.0
 mouse_filter = 2
 color = Color(0.02, 0.02, 0.04, 1)
 
@@ -510,54 +514,49 @@ color = Color(0.02, 0.02, 0.04, 1)
 position = Vector2(8, -64)
 mist_nodes = Array[NodePath]([NodePath("../darkness_mists/mist_room2")])
 
-[node name="room2_north_door" parent="." instance=ExtResource("6_door")]
+[node name="room2_north_door" parent="." unique_id=271371474 instance=ExtResource("6_door")]
 position = Vector2(8, -240)
 open_on_proximity = true
-proximity_radius = 38.0
 is_locked = true
 mist_nodes = Array[NodePath]([NodePath("../darkness_mists/mist_room3")])
 
-[node name="room4_south_door" parent="." instance=ExtResource("6_door")]
+[node name="room4_south_door" parent="." unique_id=85116214 instance=ExtResource("6_door")]
 position = Vector2(472, -272)
 open_on_proximity = true
-proximity_radius = 38.0
 is_locked = true
 mist_nodes = Array[NodePath]([NodePath("../darkness_mists/mist_boss_room")])
 
-[node name="hallway1_west_door" parent="." instance=ExtResource("8_side_door")]
+[node name="hallway1_west_door" parent="." unique_id=2130275757 instance=ExtResource("8_side_door")]
 position = Vector2(152, -128)
 open_on_proximity = true
 proximity_radius = 36.0
 is_locked = true
 mist_nodes = Array[NodePath]([NodePath("../darkness_mists/mist_hallway1")])
 
-[node name="hallway1_east_door" parent="." instance=ExtResource("8_side_door")]
+[node name="hallway1_east_door" parent="." unique_id=1535128879 instance=ExtResource("8_side_door")]
 position = Vector2(244, -128)
 open_on_proximity = true
 proximity_radius = 36.0
-is_locked = false
 mist_nodes = Array[NodePath]([NodePath("../darkness_mists/mist_boss_room"), NodePath("../darkness_mists/mist_room4_boss_wall")])
 
-[node name="hallway2_west_door" parent="." instance=ExtResource("8_side_door")]
+[node name="hallway2_west_door" parent="." unique_id=634057103 instance=ExtResource("8_side_door")]
 position = Vector2(152, -320)
 open_on_proximity = true
 proximity_radius = 36.0
 is_locked = true
 mist_nodes = Array[NodePath]([NodePath("../darkness_mists/mist_hallway2")])
 
-[node name="hallway2_east_door" parent="." instance=ExtResource("8_side_door")]
+[node name="hallway2_east_door" parent="." unique_id=835586051 instance=ExtResource("8_side_door")]
 position = Vector2(244, -320)
 open_on_proximity = true
 proximity_radius = 36.0
-is_locked = false
 mist_nodes = Array[NodePath]([NodePath("../darkness_mists/mist_room4"), NodePath("../darkness_mists/mist_room4_boss_wall")])
 
 [node name="arena_manager" parent="." unique_id=1127219856 node_paths=PackedStringArray("door_node", "entities_container") instance=ExtResource("7_arena")]
-room_id = 1
 door_node = NodePath("../sliding_door")
 entities_container = NodePath("../entities")
 
-[node name="arena_manager_room2" parent="." node_paths=PackedStringArray("door_node", "entities_container") instance=ExtResource("7_arena")]
+[node name="arena_manager_room2" parent="." unique_id=569541074 node_paths=PackedStringArray("door_node", "entities_container") instance=ExtResource("7_arena")]
 room_id = 2
 door_node = NodePath("../room2_north_door")
 entrance_doors = Array[NodePath]([NodePath("../sliding_door")])
@@ -565,14 +564,14 @@ unlock_doors = Array[NodePath]([NodePath("../hallway1_west_door"), NodePath("../
 lock_during_waves = Array[NodePath]([NodePath("../hallway1_west_door")])
 entities_container = NodePath("../entities")
 
-[node name="arena_manager_room3" parent="." node_paths=PackedStringArray("entities_container") instance=ExtResource("7_arena")]
+[node name="arena_manager_room3" parent="." unique_id=15161817 node_paths=PackedStringArray("entities_container") instance=ExtResource("7_arena")]
 room_id = 3
 entrance_doors = Array[NodePath]([NodePath("../room2_north_door")])
 unlock_doors = Array[NodePath]([NodePath("../hallway2_west_door")])
 lock_during_waves = Array[NodePath]([NodePath("../hallway2_west_door")])
 entities_container = NodePath("../entities")
 
-[node name="arena_manager_room4" parent="." node_paths=PackedStringArray("door_node", "entities_container") instance=ExtResource("7_arena")]
+[node name="arena_manager_room4" parent="." unique_id=2104415362 node_paths=PackedStringArray("door_node", "entities_container") instance=ExtResource("7_arena")]
 room_id = 4
 door_node = NodePath("../room4_south_door")
 entrance_doors = Array[NodePath]([NodePath("../hallway2_east_door")])
