@@ -75,7 +75,7 @@ custom_solver_bias = 0.089
 points = PackedVector2Array(-340, -68, -338, -64, -333, -64, -331, -103, -372, -102, -371, -64, -365, -64, -365, -68)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_enemy_south_room1"]
-size = Vector2(320, 48)
+size = Vector2(336, 14)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_enemy_div_left"]
 size = Vector2(144, 48)
@@ -253,7 +253,7 @@ collision_layer = 2048
 collision_mask = 0
 
 [node name="enemy_room1_south" type="CollisionShape2D" parent="world before player render/enemy_south_wall_blockers" unique_id=1552065418]
-position = Vector2(-8, 104)
+position = Vector2(-9, 117)
 shape = SubResource("RectangleShape2D_enemy_south_room1")
 
 [node name="enemy_room2_south_left" type="CollisionShape2D" parent="world before player render/enemy_south_wall_blockers" unique_id=368826354]

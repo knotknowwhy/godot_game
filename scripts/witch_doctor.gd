@@ -69,7 +69,9 @@ func _get_separation_vector() -> Vector2:
 			continue
 		var diff = global_position - e.global_position
 		var d = diff.length()
-		if d > 0.001 and d < 26.0:
+		if d < 0.001:
+			push += Vector2(randf_range(-1.0, 1.0), randf_range(-1.0, 1.0)).normalized()
+		elif d < 26.0:
 			push += (diff / d) * (1.0 - d / 26.0)
 	return push
 
@@ -104,14 +106,18 @@ func _physics_process(delta: float) -> void:
 				if dist < PREFERRED_MIN_DIST:
 					# Kite away from player while weaving slightly
 					var away = -to_player.rotated(sin(wander_seed) * 0.35)
-					move_vec = (away + sep * 1.2).normalized() * SPEED
+					move_vec = (away + sep * 0.9).normalized() * SPEED
 				elif dist > PREFERRED_MAX_DIST:
-					# Approach into casting range
-					move_vec = (to_player + sep * 1.1).normalized() * SPEED
+					# Approach into casting range, projecting sep to lateral if it opposes
+					var forward_proj = sep.dot(to_player)
+					if forward_proj < 0.0:
+						var lateral = sep - to_player * forward_proj
+						sep = lateral.normalized() * minf(sep.length(), 0.9)
+					move_vec = (to_player + sep * 0.9).normalized() * SPEED
 				else:
 					# Strafe around player at range
 					var tangent = to_player.rotated(PI * 0.5 * strafe_sign)
-					move_vec = (tangent * 0.75 + sep * 1.2).normalized() * (SPEED * 0.72)
+					move_vec = (tangent * 0.85 + sep * 0.9).normalized() * (SPEED * 0.72)
 				
 				velocity = move_vec
 			else:

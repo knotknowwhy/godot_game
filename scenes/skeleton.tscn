@@ -340,12 +340,12 @@ radius = 5.0
 height = 14.0
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_qb2ec"]
-radius = 74.02702
+radius = 260.0
 
 [node name="skeleton" type="CharacterBody2D"]
 z_index = 2
 collision_layer = 4096
-collision_mask = 6338
+collision_mask = 2242
 motion_mode = 1
 script = ExtResource("1_txkty")
 

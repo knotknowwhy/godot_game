@@ -77,28 +77,33 @@ func _find_player_target() -> void:
 
 func _get_separation_vector() -> Vector2:
 	var push = Vector2.ZERO
-	# Mutual repulsion between enemies to prevent stacking
+	# Mutual soft repulsion between enemies to prevent stacking
 	var enemies = get_tree().get_nodes_in_group("enemies")
 	for e in enemies:
 		if e == self or not is_instance_valid(e):
 			continue
 		var diff = global_position - e.global_position
 		var d = diff.length()
-		if d > 0.001 and d < 24.0:
-			push += (diff / d) * (1.0 - d / 24.0)
+		if d < 0.001:
+			push += Vector2(randf_range(-1.0, 1.0), randf_range(-1.0, 1.0)).normalized()
+		elif d < 26.0:
+			push += (diff / d) * (1.0 - d / 26.0)
 	
-	# Gentle repulsion from player when touching to prevent gluing
+	# Gentle spacing from player when close to prevent gluing
 	if player_target and is_instance_valid(player_target):
 		var p_diff = global_position - player_target.global_position
 		var p_dist = p_diff.length()
-		if p_dist > 0.001 and p_dist < 18.0:
-			push += (p_diff / p_dist) * (1.0 - p_dist / 18.0) * 1.4
+		if p_dist < 16.0:
+			var p_dir = (p_diff / p_dist) if p_dist > 0.001 else Vector2.UP
+			push += p_dir * (1.0 - p_dist / 16.0) * 0.8
 			
 	return push
 
 func _physics_process(delta: float) -> void:
 	if is_dead:
 		return
+	
+	_find_player_target()
 	
 	match current_state:
 		State.IDLE:
@@ -118,13 +123,14 @@ func _physics_process(delta: float) -> void:
 				var dist = global_position.distance_to(player_target.global_position)
 				facing_direction = to_player
 				var sep = _get_separation_vector()
-				if dist < 26.0:
+				if dist < 24.0:
 					# Back off slightly
-					velocity = (-to_player * 20.0 + sep * 25.0)
+					velocity = (-to_player * 18.0 + sep * 20.0)
 				else:
-					# Gentle slow circle
-					var circle_dir = to_player.rotated(PI * 0.45)
-					velocity = (circle_dir * 18.0 + sep * 20.0)
+					# Gentle slow circle (flank offset determines clockwise vs counter-clockwise)
+					var circle_sign = 1.0 if flank_offset_angle >= 0.0 else -1.0
+					var circle_dir = to_player.rotated(PI * 0.45 * circle_sign)
+					velocity = (circle_dir * 18.0 + sep * 18.0)
 			else:
 				velocity = velocity.move_toward(Vector2.ZERO, SPEED)
 			_update_animation_by_velocity()
@@ -141,7 +147,14 @@ func _physics_process(delta: float) -> void:
 					var to_player = global_position.direction_to(player_target.global_position)
 					var approach_dir = to_player.rotated(flank_offset_angle + sway)
 					var sep = _get_separation_vector()
-					var move_dir = (approach_dir + sep * 1.1).normalized()
+					
+					# Remove backward component of separation so trailing enemies flank rather than halt/reverse
+					var forward_proj = sep.dot(approach_dir)
+					if forward_proj < 0.0:
+						var lateral = sep - approach_dir * forward_proj
+						sep = lateral.normalized() * minf(sep.length(), 0.9)
+					
+					var move_dir = (approach_dir + sep * 0.95).normalized()
 					velocity = move_dir * (SPEED * speed_variance)
 					facing_direction = to_player
 			else:
@@ -154,7 +167,7 @@ func _physics_process(delta: float) -> void:
 			# Completely stationary windup - commits to attack direction
 			velocity = Vector2.ZERO
 			windup_shake_timer += delta * 30.0
-			animation.position.x = sin(windup_shake_timer) * 1.2
+			animation.offset.x = sin(windup_shake_timer) * 1.2
 			_update_idle_animation()
 			move_and_slide()
 			
@@ -238,6 +251,7 @@ func _start_strike() -> void:
 	if is_dead or current_state == State.STAGGERED or current_state == State.HITSTUN:
 		return
 	
+	animation.offset = Vector2.ZERO
 	current_state = State.STRIKE
 	# Minor forward nudge over 0.08s (never a full-screen homing rush)
 	velocity = attack_direction * STRIKE_NUDGE_SPEED
@@ -491,19 +505,18 @@ func _try_spawn_drop() -> void:
 	get_parent().call_deferred("add_child", pickup)
 
 func _on_see_area_body_entered(body: Node2D) -> void:
-	if body.name == "player" or body is CharacterBody2D:
+	if body.is_in_group("player"):
 		player_target = body
 
-func _on_see_area_body_exited(body: Node2D) -> void:
-	if body == player_target:
-		player_target = null
+func _on_see_area_body_exited(_body: Node2D) -> void:
+	# Retain active engagement in arena combat
+	pass
 
 func _on_see_area_area_entered(area: Area2D) -> void:
-	if area.owner and area.owner.name == "player":
+	if area.owner and area.owner.is_in_group("player"):
 		player_target = area.owner
-	elif area.get_parent() and area.get_parent().name == "player":
+	elif area.get_parent() and area.get_parent().is_in_group("player"):
 		player_target = area.get_parent()
 
-func _on_see_area_area_exited(area: Area2D) -> void:
-	if player_target and (area.owner == player_target or area.get_parent() == player_target):
-		player_target = null
+func _on_see_area_area_exited(_area: Area2D) -> void:
+	pass

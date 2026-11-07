@@ -527,7 +527,7 @@ size = Vector2(13, 12)
 [node name="pyromancer" type="CharacterBody2D"]
 z_index = 2
 collision_layer = 4096
-collision_mask = 6338
+collision_mask = 2242
 motion_mode = 1
 script = ExtResource("2_script")
 
