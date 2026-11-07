@@ -1,21 +1,24 @@
 class_name ControlsHint
 extends Control
 
-@export_enum("Bottom Left", "Bottom Right", "Top Right") var corner_placement: int = 0
-@export var margin_offset: Vector2 = Vector2(24, 24)
+@export_enum("Bottom Left", "Bottom Right", "Top Right") var corner_placement: int = 0:
+	set(val):
+		corner_placement = val
+		_apply_corner_anchors()
+
 @export var enable_toggle: bool = true
 @export var toggle_key: Key = KEY_H
 
-@onready var panel: PanelContainer = $panel
-@onready var row_move: HBoxContainer = $panel/margin/vbox/row_move
-@onready var row_dodge: HBoxContainer = $panel/margin/vbox/row_dodge
-@onready var row_attack: HBoxContainer = $panel/margin/vbox/row_attack
-@onready var row_block: HBoxContainer = $panel/margin/vbox/row_block
+@onready var panel: PanelContainer = $margin/panel
+@onready var row_move: HBoxContainer = $margin/panel/inner_margin/vbox/row_move
+@onready var row_dodge: HBoxContainer = $margin/panel/inner_margin/vbox/row_dodge
+@onready var row_attack: HBoxContainer = $margin/panel/inner_margin/vbox/row_attack
+@onready var row_block: HBoxContainer = $margin/panel/inner_margin/vbox/row_block
 
-@onready var icon_move: TextureRect = $panel/margin/vbox/row_move/icon_box/icon
-@onready var icon_dodge: TextureRect = $panel/margin/vbox/row_dodge/icon_box/icon
-@onready var icon_attack: TextureRect = $panel/margin/vbox/row_attack/icon_box/icon
-@onready var icon_block: TextureRect = $panel/margin/vbox/row_block/icon_box/icon
+@onready var icon_move: TextureRect = $margin/panel/inner_margin/vbox/row_move/icon_box/icon
+@onready var icon_dodge: TextureRect = $margin/panel/inner_margin/vbox/row_dodge/icon_box/icon
+@onready var icon_attack: TextureRect = $margin/panel/inner_margin/vbox/row_attack/icon_box/icon
+@onready var icon_block: TextureRect = $margin/panel/inner_margin/vbox/row_block/icon_box/icon
 
 var is_hidden: bool = false
 var fade_tween: Tween = null
@@ -28,29 +31,24 @@ const ACCENT_GREEN := Color(0.6, 1.35, 0.85, 1.0)
 
 func _ready() -> void:
 	_apply_corner_anchors()
-	# Subtle introductory fade-in
+	# Smooth introductory fade-in
 	modulate.a = 0.0
 	var tween = create_tween()
-	tween.tween_property(self, "modulate:a", 1.0, 0.4).set_trans(Tween.TRANS_SINE)
+	tween.tween_property(self, "modulate:a", 1.0, 0.35).set_trans(Tween.TRANS_SINE)
 
 func _apply_corner_anchors() -> void:
-	# 0: Bottom Left, 1: Bottom Right, 2: Top Right
+	if not is_inside_tree() or not panel:
+		return
 	match corner_placement:
 		0: # Bottom Left
-			set_anchors_preset(Control.PRESET_BOTTOM_LEFT)
-			grow_horizontal = Control.GROW_DIRECTION_END
-			grow_vertical = Control.GROW_DIRECTION_BEGIN
-			position = Vector2(margin_offset.x, -margin_offset.y - size.y)
+			panel.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
+			panel.size_flags_vertical = Control.SIZE_SHRINK_END
 		1: # Bottom Right
-			set_anchors_preset(Control.PRESET_BOTTOM_RIGHT)
-			grow_horizontal = Control.GROW_DIRECTION_BEGIN
-			grow_vertical = Control.GROW_DIRECTION_BEGIN
-			position = Vector2(-margin_offset.x - size.x, -margin_offset.y - size.y)
+			panel.size_flags_horizontal = Control.SIZE_SHRINK_END
+			panel.size_flags_vertical = Control.SIZE_SHRINK_END
 		2: # Top Right
-			set_anchors_preset(Control.PRESET_TOP_RIGHT)
-			grow_horizontal = Control.GROW_DIRECTION_BEGIN
-			grow_vertical = Control.GROW_DIRECTION_END
-			position = Vector2(-margin_offset.x - size.x, margin_offset.y)
+			panel.size_flags_horizontal = Control.SIZE_SHRINK_END
+			panel.size_flags_vertical = Control.SIZE_SHRINK_BEGIN
 
 func _unhandled_input(event: InputEvent) -> void:
 	if enable_toggle and event is InputEventKey and event.pressed and not event.echo:
