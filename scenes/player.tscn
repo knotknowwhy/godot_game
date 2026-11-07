@@ -754,7 +754,7 @@ shader_parameter/inner_radius = 0.35
 shader_parameter/outer_radius = 0.85
 
 [node name="player" type="CharacterBody2D"]
-z_index = 1
+z_index = 2
 collision_layer = 2
 collision_mask = 4544
 motion_mode = 1

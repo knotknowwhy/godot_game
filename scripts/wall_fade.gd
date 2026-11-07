@@ -124,7 +124,7 @@ func _update_fade_state() -> void:
 			if target != null:
 				var p = target.get_parent() as CanvasItem
 				if p == null or not _targets.has(p):
-					target.z_index = _original_z.get(target, 0) + 2
+					target.z_index = _original_z.get(target, 0) + 3
 		_fade_to(1.0)
 	else:
 		_is_player_inside = false

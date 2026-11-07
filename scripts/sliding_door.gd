@@ -39,14 +39,14 @@ func _ready() -> void:
 			fade_trigger.body_exited.connect(_on_fade_body_exited)
 	
 	if is_open:
-		z_index = 0
+		z_index = 1
 		if door_sprite:
 			door_sprite.position.y = initial_sprite_y - slide_distance
 		if collision_shape:
 			collision_shape.set_deferred("disabled", true)
 		_reveal_mist(true)
 	else:
-		z_index = 0
+		z_index = 1
 		if door_sprite:
 			door_sprite.position.y = initial_sprite_y
 		if collision_shape:
@@ -75,17 +75,17 @@ func _on_fade_body_exited(body: Node2D) -> void:
 
 func _update_fade_state() -> void:
 	if is_open:
-		z_index = 0
+		z_index = 1
 		_fade_to(0.0)
 		return
 	
 	_inside_bodies = _inside_bodies.filter(func(b): return is_instance_valid(b))
 	
 	if not _inside_bodies.is_empty():
-		z_index = 2
+		z_index = 3
 		_fade_to(1.0)
 	else:
-		z_index = 0
+		z_index = 1
 		_fade_to(0.0)
 
 func _fade_to(target_val: float) -> void:
@@ -191,13 +191,13 @@ func open_door() -> void:
 		_screen_rumble()
 		
 		tween.tween_callback(func():
-			z_index = 0
+			z_index = 1
 			door_opened.emit()
 		)
 	else:
 		if door_sprite:
 			door_sprite.position.y = initial_sprite_y - slide_distance
-		z_index = 0
+		z_index = 1
 		door_opened.emit()
 
 func close_door() -> void:

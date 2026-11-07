@@ -350,12 +350,12 @@ position = Vector2(-8, -248)
 shape = SubResource("RectangleShape2D_inter_fade_trigger")
 
 [node name="foreground_arch" type="TileMapLayer" parent="world after player render" unique_id=1139477323]
-z_index = 2
+z_index = 3
 tile_map_data = PackedByteArray("AAAbAO3/AAAZAAEAAAAcAO3/AAAaAAEAAAAdAO3/AAAbAAEAAAAeAO3/AAAcAAEAAAAfAO3/AAAdAAEAAAD+/+//AAAZAAEAAAD//+//AAAaAAEAAAAAAO//AAAbAAEAAAABAO//AAAcAAEAAAACAO//AAAdAAEAAAD+//r/AAAZAAEAAAD///r/AAAaAAEAAAAAAPr/AAAbAAEAAAABAPr/AAAcAAEAAAACAPr/AAAdAAEAAAA=")
 tile_set = ExtResource("1_lnu2h")
 
 [node name="tunnel_arch" type="TileMapLayer" parent="world after player render" unique_id=2108037327]
-z_index = 2
+z_index = 3
 tile_map_data = PackedByteArray("AAAJAOf/AAAbAAcAAAAPAOf/AAAbAAcAAAAJAOj/AAAbAAgAAAAPAOj/AAAbAAgAAAAJAOn/AAAbAAkAAAAPAOn/AAAbAAkAAAAJAOr/AAAbAAoAAAAPAOr/AAAbAAoAAAAJAOv/AAAbAAsAAAAPAOv/AAAbAAsAAAAJAPP/AAAbAAcAAAAPAPP/AAAbAAcAAAAJAPT/AAAbAAgAAAAPAPT/AAAbAAgAAAAJAPX/AAAbAAkAAAAPAPX/AAAbAAkAAAAJAPb/AAAbAAoAAAAPAPb/AAAbAAoAAAAJAPf/AAAbAAsAAAAPAPf/AAAbAAsAAAA=")
 tile_set = ExtResource("1_lnu2h")
 
