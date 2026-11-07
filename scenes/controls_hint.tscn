@@ -1,20 +1,15 @@
-[gd_scene format=3]
+[gd_scene format=3 uid="uid://bc77fqw8u6o62"]
 
-[ext_resource type="Script" path="res://scripts/controls_hint.gd" id="1_script"]
+[ext_resource type="Script" uid="uid://2lhh78lyo33p" path="res://scripts/controls_hint.gd" id="1_script"]
 [ext_resource type="Texture2D" uid="uid://btkd2snwwk5us" path="res://assets/sprites/ui/key_wasd.png" id="2_wasd"]
 [ext_resource type="Texture2D" uid="uid://b46eng8wun7dk" path="res://assets/sprites/ui/key_dash_combo.png" id="3_dash"]
 [ext_resource type="Texture2D" uid="uid://fo0lx8trid1k" path="res://assets/sprites/ui/mouse_lmb.png" id="4_lmb"]
 [ext_resource type="Texture2D" uid="uid://bj1edicqmnjmh" path="res://assets/sprites/ui/mouse_rmb.png" id="5_rmb"]
 [ext_resource type="FontFile" uid="uid://bdgbmcv0d67xt" path="res://assets/fonts/Silkscreen-Bold.ttf" id="6_font"]
 
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_bg"]
-bg_color = Color(0.04, 0.04, 0.05, 0.38)
-corner_radius_top_left = 6
-corner_radius_top_right = 6
-corner_radius_bottom_right = 6
-corner_radius_bottom_left = 6
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_none"]
 
-[node name="controls_hint" type="Control"]
+[node name="controls_hint" type="Control" unique_id=2134187955]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -24,88 +19,42 @@ grow_vertical = 2
 mouse_filter = 2
 script = ExtResource("1_script")
 
-[node name="margin" type="MarginContainer" parent="."]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-mouse_filter = 2
-theme_override_constants/margin_left = 24
-theme_override_constants/margin_top = 24
-theme_override_constants/margin_right = 24
-theme_override_constants/margin_bottom = 24
-
-[node name="panel" type="PanelContainer" parent="margin"]
+[node name="panel" type="PanelContainer" parent="." unique_id=917362311]
 custom_minimum_size = Vector2(210, 160)
-layout_mode = 2
+layout_mode = 0
+offset_left = 24.0
+offset_top = 896.0
+offset_right = 234.0
+offset_bottom = 1056.0
 size_flags_horizontal = 0
 size_flags_vertical = 8
 mouse_filter = 2
-theme_override_styles/panel = SubResource("StyleBoxFlat_bg")
+theme_override_styles/panel = SubResource("StyleBoxEmpty_none")
 
-[node name="inner_margin" type="MarginContainer" parent="margin/panel"]
-layout_mode = 2
-mouse_filter = 2
-theme_override_constants/margin_left = 12
-theme_override_constants/margin_top = 8
-theme_override_constants/margin_right = 14
-theme_override_constants/margin_bottom = 8
-
-[node name="vbox" type="VBoxContainer" parent="margin/panel/inner_margin"]
+[node name="vbox" type="VBoxContainer" parent="panel" unique_id=36020934]
 layout_mode = 2
 mouse_filter = 2
 theme_override_constants/separation = 7
 
-[node name="header" type="HBoxContainer" parent="margin/panel/inner_margin/vbox"]
-layout_mode = 2
-mouse_filter = 2
-
-[node name="title" type="Label" parent="margin/panel/inner_margin/vbox/header"]
-layout_mode = 2
-size_flags_horizontal = 3
-theme_override_colors/font_color = Color(0.5, 0.52, 0.58, 0.8)
-theme_override_fonts/font = ExtResource("6_font")
-theme_override_font_sizes/font_size = 9
-text = "CONTROLS"
-vertical_alignment = 1
-
-[node name="hint" type="Label" parent="margin/panel/inner_margin/vbox/header"]
-layout_mode = 2
-theme_override_colors/font_color = Color(0.38, 0.4, 0.46, 0.65)
-theme_override_fonts/font = ExtResource("6_font")
-theme_override_font_sizes/font_size = 8
-text = "[H] HIDE"
-horizontal_alignment = 2
-vertical_alignment = 1
-
-[node name="sep" type="ColorRect" parent="margin/panel/inner_margin/vbox"]
-custom_minimum_size = Vector2(0, 1)
-layout_mode = 2
-mouse_filter = 2
-color = Color(1, 1, 1, 0.08)
-
-[node name="row_move" type="HBoxContainer" parent="margin/panel/inner_margin/vbox"]
+[node name="row_move" type="HBoxContainer" parent="panel/vbox" unique_id=1550216869]
 layout_mode = 2
 mouse_filter = 2
 theme_override_constants/separation = 10
 
-[node name="icon_box" type="CenterContainer" parent="margin/panel/inner_margin/vbox/row_move"]
+[node name="icon_box" type="CenterContainer" parent="panel/vbox/row_move" unique_id=389116893]
 custom_minimum_size = Vector2(74, 28)
 layout_mode = 2
 mouse_filter = 2
 
-[node name="icon" type="TextureRect" parent="margin/panel/inner_margin/vbox/row_move/icon_box"]
+[node name="icon" type="TextureRect" parent="panel/vbox/row_move/icon_box" unique_id=333163308]
 custom_minimum_size = Vector2(44, 31)
 layout_mode = 2
 mouse_filter = 2
-pivot_offset = Vector2(22, 15.5)
 texture = ExtResource("2_wasd")
 expand_mode = 1
 stretch_mode = 5
 
-[node name="label" type="Label" parent="margin/panel/inner_margin/vbox/row_move"]
+[node name="label" type="Label" parent="panel/vbox/row_move" unique_id=329379019]
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_colors/font_color = Color(0.8, 0.82, 0.88, 0.9)
@@ -114,29 +63,28 @@ theme_override_constants/shadow_offset_x = 1
 theme_override_constants/shadow_offset_y = 1
 theme_override_fonts/font = ExtResource("6_font")
 theme_override_font_sizes/font_size = 10
-text = "MOVE"
+text = "move"
 vertical_alignment = 1
 
-[node name="row_dodge" type="HBoxContainer" parent="margin/panel/inner_margin/vbox"]
+[node name="row_dodge" type="HBoxContainer" parent="panel/vbox" unique_id=363444767]
 layout_mode = 2
 mouse_filter = 2
 theme_override_constants/separation = 10
 
-[node name="icon_box" type="CenterContainer" parent="margin/panel/inner_margin/vbox/row_dodge"]
+[node name="icon_box" type="CenterContainer" parent="panel/vbox/row_dodge" unique_id=1923174668]
 custom_minimum_size = Vector2(74, 22)
 layout_mode = 2
 mouse_filter = 2
 
-[node name="icon" type="TextureRect" parent="margin/panel/inner_margin/vbox/row_dodge/icon_box"]
+[node name="icon" type="TextureRect" parent="panel/vbox/row_dodge/icon_box" unique_id=2061196601]
 custom_minimum_size = Vector2(70, 20)
 layout_mode = 2
 mouse_filter = 2
-pivot_offset = Vector2(35, 10)
 texture = ExtResource("3_dash")
 expand_mode = 1
 stretch_mode = 5
 
-[node name="label" type="Label" parent="margin/panel/inner_margin/vbox/row_dodge"]
+[node name="label" type="Label" parent="panel/vbox/row_dodge" unique_id=1664888299]
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_colors/font_color = Color(0.8, 0.82, 0.88, 0.9)
@@ -145,29 +93,28 @@ theme_override_constants/shadow_offset_x = 1
 theme_override_constants/shadow_offset_y = 1
 theme_override_fonts/font = ExtResource("6_font")
 theme_override_font_sizes/font_size = 10
-text = "DODGE"
+text = "dodge/dash"
 vertical_alignment = 1
 
-[node name="row_attack" type="HBoxContainer" parent="margin/panel/inner_margin/vbox"]
+[node name="row_attack" type="HBoxContainer" parent="panel/vbox" unique_id=829313492]
 layout_mode = 2
 mouse_filter = 2
 theme_override_constants/separation = 10
 
-[node name="icon_box" type="CenterContainer" parent="margin/panel/inner_margin/vbox/row_attack"]
+[node name="icon_box" type="CenterContainer" parent="panel/vbox/row_attack" unique_id=1730071324]
 custom_minimum_size = Vector2(74, 24)
 layout_mode = 2
 mouse_filter = 2
 
-[node name="icon" type="TextureRect" parent="margin/panel/inner_margin/vbox/row_attack/icon_box"]
+[node name="icon" type="TextureRect" parent="panel/vbox/row_attack/icon_box" unique_id=2110416507]
 custom_minimum_size = Vector2(17, 24)
 layout_mode = 2
 mouse_filter = 2
-pivot_offset = Vector2(8.5, 12)
 texture = ExtResource("4_lmb")
 expand_mode = 1
 stretch_mode = 5
 
-[node name="label" type="Label" parent="margin/panel/inner_margin/vbox/row_attack"]
+[node name="label" type="Label" parent="panel/vbox/row_attack" unique_id=1518404934]
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_colors/font_color = Color(0.8, 0.82, 0.88, 0.9)
@@ -176,29 +123,28 @@ theme_override_constants/shadow_offset_x = 1
 theme_override_constants/shadow_offset_y = 1
 theme_override_fonts/font = ExtResource("6_font")
 theme_override_font_sizes/font_size = 10
-text = "ATTACK"
+text = "attack"
 vertical_alignment = 1
 
-[node name="row_block" type="HBoxContainer" parent="margin/panel/inner_margin/vbox"]
+[node name="row_block" type="HBoxContainer" parent="panel/vbox" unique_id=1938390047]
 layout_mode = 2
 mouse_filter = 2
 theme_override_constants/separation = 10
 
-[node name="icon_box" type="CenterContainer" parent="margin/panel/inner_margin/vbox/row_block"]
+[node name="icon_box" type="CenterContainer" parent="panel/vbox/row_block" unique_id=765418785]
 custom_minimum_size = Vector2(74, 24)
 layout_mode = 2
 mouse_filter = 2
 
-[node name="icon" type="TextureRect" parent="margin/panel/inner_margin/vbox/row_block/icon_box"]
+[node name="icon" type="TextureRect" parent="panel/vbox/row_block/icon_box" unique_id=1969364659]
 custom_minimum_size = Vector2(17, 24)
 layout_mode = 2
 mouse_filter = 2
-pivot_offset = Vector2(8.5, 12)
 texture = ExtResource("5_rmb")
 expand_mode = 1
 stretch_mode = 5
 
-[node name="label" type="Label" parent="margin/panel/inner_margin/vbox/row_block"]
+[node name="label" type="Label" parent="panel/vbox/row_block" unique_id=831644530]
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_colors/font_color = Color(0.8, 0.82, 0.88, 0.9)
@@ -207,5 +153,5 @@ theme_override_constants/shadow_offset_x = 1
 theme_override_constants/shadow_offset_y = 1
 theme_override_fonts/font = ExtResource("6_font")
 theme_override_font_sizes/font_size = 10
-text = "BLOCK"
+text = "block"
 vertical_alignment = 1
