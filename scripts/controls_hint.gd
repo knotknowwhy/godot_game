@@ -23,11 +23,11 @@ extends Control
 var is_hidden: bool = false
 var fade_tween: Tween = null
 
-const NORMAL_MODULATE := Color(1.0, 1.0, 1.0, 0.92)
-const ACTIVE_MODULATE := Color(1.4, 1.4, 1.5, 1.0)
-const ACCENT_GOLD := Color(1.4, 1.15, 0.5, 1.0)
-const ACCENT_CYAN := Color(0.6, 1.25, 1.5, 1.0)
-const ACCENT_GREEN := Color(0.6, 1.35, 0.85, 1.0)
+const NORMAL_MODULATE := Color(0.9, 0.9, 0.95, 0.82)
+const ACTIVE_MODULATE := Color(1.3, 1.3, 1.4, 1.0)
+const ACCENT_GOLD := Color(1.3, 1.1, 0.5, 1.0)
+const ACCENT_CYAN := Color(0.6, 1.2, 1.4, 1.0)
+const ACCENT_GREEN := Color(0.6, 1.3, 0.8, 1.0)
 
 func _ready() -> void:
 	_apply_corner_anchors()
