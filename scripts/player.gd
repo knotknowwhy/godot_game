@@ -57,6 +57,7 @@ var block_start_time: float = 0.0
 
 func _ready() -> void:
 	add_to_group("player")
+	max_health = int(round(max_health * GameSettings.get_player_health_multiplier()))
 	health = max_health
 	if health_bar:
 		health_bar.set_health(health, max_health)
@@ -346,7 +347,7 @@ func apply_damage_boost(duration: float = 7.0, multiplier: float = 1.5) -> void:
 	_flash_power_buff()
 
 func get_total_damage_multiplier() -> float:
-	return (1.0 + permanent_damage_bonus) * damage_multiplier
+	return (1.0 + permanent_damage_bonus) * damage_multiplier * GameSettings.get_player_damage_multiplier()
 
 func on_successful_sword_hit() -> void:
 	if permanent_lifesteal > 0 and not is_dead:

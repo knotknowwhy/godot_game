@@ -49,6 +49,8 @@ var wander_seed: float = 0.0
 
 func _ready() -> void:
 	add_to_group("enemies")
+	max_health = int(round(max_health * GameSettings.get_enemy_health_multiplier()))
+	projectile_damage = int(round(projectile_damage * GameSettings.get_enemy_damage_multiplier()))
 	health = max_health
 	if health_bar:
 		health_bar.set_health(health, max_health)

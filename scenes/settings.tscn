@@ -1,0 +1,49 @@
+[gd_scene format=3 uid="uid://cj756y08xxxay"]
+
+[ext_resource type="Script" path="res://scripts/settings.gd" id="1_settings"]
+
+[node name="settings" type="Node2D" unique_id=550728255]
+script = ExtResource("1_settings")
+
+[node name="ui" type="Node" parent="." unique_id=1082275970]
+
+[node name="title_label" type="Label" parent="ui" unique_id=1082275971]
+offset_left = 760.0
+offset_top = 240.0
+offset_right = 1160.0
+offset_bottom = 320.0
+theme_override_font_sizes/font_size = 45
+text = "Settings"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="difficulty_button" type="Button" parent="ui" unique_id=1082275972]
+offset_left = 760.0
+offset_top = 420.0
+offset_right = 1160.0
+offset_bottom = 510.0
+theme_override_font_sizes/font_size = 32
+text = "Difficulty: Medium"
+
+[node name="difficulty_info" type="Label" parent="ui" unique_id=1082275973]
+offset_left = 660.0
+offset_top = 530.0
+offset_right = 1260.0
+offset_bottom = 620.0
+theme_override_colors/font_color = Color(0.8, 0.82, 0.88, 1)
+theme_override_font_sizes/font_size = 22
+text = "Player HP: x1.0 | Player DMG: x1.0
+Enemy HP: x1.0 | Enemy DMG: x1.0"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="back_button" type="Button" parent="ui" unique_id=1082275974]
+offset_left = 845.0
+offset_top = 720.0
+offset_right = 1075.0
+offset_bottom = 803.0
+theme_override_font_sizes/font_size = 30
+text = "Back"
+
+[connection signal="pressed" from="ui/difficulty_button" to="." method="_on_difficulty_button_pressed"]
+[connection signal="pressed" from="ui/back_button" to="." method="_on_back_button_pressed"]

@@ -3,11 +3,12 @@
 [ext_resource type="TileSet" uid="uid://bihgllmtkyl2c" path="res://assets/tileset/new_tile_set.tres" id="1_lnu2h"]
 [ext_resource type="PackedScene" uid="uid://casgcs7q8ujxx" path="res://scenes/player.tscn" id="2_yqjtg"]
 [ext_resource type="Script" uid="uid://c364vwd2acywd" path="res://scripts/wall_fade.gd" id="3_fade"]
-[ext_resource type="Texture2D" uid="uid://bho1vymo78h06" path="res://assets/tileset/asdasdasd.png" id="3_p57ef"]
+[ext_resource type="PackedScene" uid="uid://cbm8xpqx7xtqg" path="res://scenes/knight.tscn" id="3_vtaks"]
 [ext_resource type="PackedScene" uid="uid://dxei2w4o7gocj" path="res://scenes/spikes.tscn" id="4_lbhrr"]
+[ext_resource type="Texture2D" uid="uid://c2ih8u3rp2h2o" path="res://assets/tileset/trone.png" id="5_vtaks"]
 [ext_resource type="PackedScene" path="res://scenes/sliding_door.tscn" id="6_door"]
 [ext_resource type="PackedScene" path="res://scenes/arena_manager.tscn" id="7_arena"]
-[ext_resource type="PackedScene" path="res://scenes/side_sliding_door.tscn" id="8_side_door"]
+[ext_resource type="PackedScene" uid="uid://c6f3m2qf5k4e1" path="res://scenes/side_sliding_door.tscn" id="8_side_door"]
 [ext_resource type="Shader" uid="uid://do37p2pu5ab34" path="res://shaders/darkness_mist.gdshader" id="9_mist_shader"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_north_wall"]
@@ -289,12 +290,15 @@ shape = SubResource("RectangleShape2D_enemy_south_boss")
 [node name="player" type="Node" parent="." unique_id=1716847528]
 
 [node name="player" parent="player" unique_id=1113941880 instance=ExtResource("2_yqjtg")]
-position = Vector2(-25, -3)
+position = Vector2(201, -160)
 
 [node name="Camera2D" type="Camera2D" parent="player/player" unique_id=333743134]
 zoom = Vector2(4.98, 4.98)
 
 [node name="entities" type="Node" parent="." unique_id=896023218]
+
+[node name="knight" parent="entities" unique_id=979949739 instance=ExtResource("3_vtaks")]
+position = Vector2(393, -261)
 
 [node name="world after player render" type="Node" parent="." unique_id=745768844]
 
@@ -312,14 +316,12 @@ target_wall_path = NodePath("../foreground_room4_boss_wall")
 position = Vector2(392, -280)
 shape = SubResource("RectangleShape2D_we6vb")
 
-[node name="TextureRect" type="TextureRect" parent="world after player render" unique_id=1259042827]
-texture_filter = 1
-offset_left = 370.0
-offset_top = -282.0
-offset_right = 442.0
-offset_bottom = -174.0
-scale = Vector2(0.6, 0.6)
-texture = ExtResource("3_p57ef")
+[node name="throne" type="TextureRect" parent="world after player render" unique_id=2096355539]
+offset_left = 371.0
+offset_top = -268.0
+offset_right = 413.0
+offset_bottom = -210.0
+texture = ExtResource("5_vtaks")
 
 [node name="foreground_intermediary_wall" type="TileMapLayer" parent="world after player render" unique_id=972682734]
 tile_map_data = PackedByteArray("AAD1//r/AAABAAcAAAD2//r/AAAHAAcAAAD3//r/AAAIAAcAAAD4//r/AAAFAAcAAAD5//r/AAAGAAcAAAD6//r/AAAHAAcAAAD7//r/AAAIAAcAAAD8//r/AAAFAAcAAAD9//r/AAAGAAcAAAADAPr/AAAIAAcAAAAEAPr/AAAFAAcAAAAFAPr/AAAGAAcAAAAGAPr/AAAHAAcAAAAHAPr/AAAIAAcAAAAIAPr/AAAFAAcAAAAJAPr/AAASAAcAAAD1//v/AAABAAgAAAD2//v/AAAHAAgAAAD3//v/AAAIAAgAAAD4//v/AAAFAAgAAAD5//v/AAAGAAgAAAD6//v/AAAHAAgAAAD7//v/AAAIAAgAAAD8//v/AAAFAAgAAAD9//v/AAAGAAgAAAADAPv/AAAIAAgAAAAEAPv/AAAFAAgAAAAFAPv/AAAGAAgAAAAGAPv/AAAHAAgAAAAHAPv/AAAIAAgAAAAIAPv/AAAFAAgAAAAJAPv/AAASAAgAAAD1//z/AAABAAkAAAD2//z/AAAHAAkAAAD3//z/AAAIAAkAAAD4//z/AAAFAAkAAAD5//z/AAAGAAkAAAD6//z/AAAHAAkAAAD7//z/AAAIAAkAAAD8//z/AAAFAAkAAAD9//z/AAAGAAkAAAADAPz/AAAIAAkAAAAEAPz/AAAFAAkAAAAFAPz/AAAGAAkAAAAGAPz/AAAHAAkAAAAHAPz/AAAIAAkAAAAIAPz/AAAFAAkAAAAJAPz/AAASAAkAAAA=")
@@ -467,9 +469,9 @@ color = Color(0.02, 0.02, 0.04, 1)
 
 [node name="mist_boss_room" type="ColorRect" parent="darkness_mists" unique_id=1188563286]
 material = SubResource("ShaderMaterial_mist")
-offset_left = 242.0
+offset_left = 239.0
 offset_top = -267.0
-offset_right = 546.0
+offset_right = 543.0
 offset_bottom = -24.0
 mouse_filter = 2
 color = Color(0.02, 0.02, 0.04, 1)
