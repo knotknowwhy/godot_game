@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://c2ih8u3rp2h2o"
-path="res://.godot/imported/trone.png-9cb471a02ee648b2800a4aac7f2ee474.ctex"
+uid="uid://b2xhkm86uy410"
+path="res://.godot/imported/trone.png-f402cb1e523995554a3894df2411168a.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/tileset/trone.png"
-dest_files=["res://.godot/imported/trone.png-9cb471a02ee648b2800a4aac7f2ee474.ctex"]
+source_file="res://scenes/trone.png"
+dest_files=["res://.godot/imported/trone.png-f402cb1e523995554a3894df2411168a.ctex"]
 
 [params]
 
