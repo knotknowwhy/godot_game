@@ -47,13 +47,14 @@ const FLOATING_TEXT_SCENE = preload("res://scenes/floating_text.tscn")
 @export var boss_room_rect: Rect2 = Rect2(242.0, -267.0, 304.0, 243.0)
 @export var boss_room_trigger: NodePath
 
-@export var max_health: int = 800
+@export var max_health: int = 1000
 @export var damage_per_hit: int = 35
 @export var attack_damage: int = 20
 @export var attack_range: float = 80.0
 @export var strike_reach: float = 98.0
 @export var min_attack_cooldown: float = 1.1
 @export var max_attack_cooldown: float = 1.6
+@export var post_hit_cooldown: float = 1.0
 
 var current_state: State = State.SITTING
 var health: int = max_health
@@ -664,7 +665,7 @@ func _apply_hitstun(knockback_dir: Vector2, is_critical: bool) -> void:
 		if is_instance_valid(self) and not is_dead and current_state == State.HITSTUN:
 			is_invulnerable = false
 			current_state = State.COOLDOWN
-			get_tree().create_timer(0.55).timeout.connect(func():
+			get_tree().create_timer(post_hit_cooldown).timeout.connect(func():
 				if is_instance_valid(self) and not is_dead:
 					can_attack = true
 					if current_state == State.COOLDOWN:

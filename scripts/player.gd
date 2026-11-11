@@ -6,6 +6,7 @@ extends CharacterBody2D
 @onready var max_block_time: Timer = $max_block_time
 @onready var health_bar = $hud/margin/hbox/player_health_bar
 @onready var damage_vignette: ColorRect = $hud/damage_vignette
+@onready var death_fade_rect: ColorRect = get_node_or_null("death_fade_layer/death_fade_rect")
 var vignette_tween: Tween = null
 
 const SPEED = 100.0
@@ -44,6 +45,8 @@ var isBlocking = false
 var isDodging = false
 var can_dodge = true
 var is_invulnerable: bool = false
+@export var damage_invulnerability_duration: float = 1.0
+var invulnerability_timer: float = 0.0
 var is_dead: bool = false
 var damage_tween: Tween = null
 var buff_tint_timer: float = 0.0
@@ -87,6 +90,13 @@ func _physics_process(delta: float) -> void:
 		damage_boost_timer = maxf(0.0, damage_boost_timer - delta)
 		if damage_boost_timer == 0.0:
 			damage_multiplier = 1.0
+
+	# Process post-damage invulnerability frames
+	if invulnerability_timer > 0.0:
+		invulnerability_timer = maxf(0.0, invulnerability_timer - delta)
+		if invulnerability_timer == 0.0 and not isDodging:
+			is_invulnerable = false
+			player_animation.modulate.a = 1.0
 
 	# Natural Out-of-Combat Regeneration (heals when avoiding damage)
 	if health < max_health:
@@ -293,8 +303,9 @@ func _start_dodge(input_dir: Vector2) -> void:
 	get_tree().create_timer(DODGE_DURATION).timeout.connect(func():
 		if is_instance_valid(self) and not is_dead:
 			isDodging = false
-			is_invulnerable = false
-			player_animation.modulate.a = 1.0
+			if invulnerability_timer <= 0.0:
+				is_invulnerable = false
+				player_animation.modulate.a = 1.0
 			get_tree().create_timer(DODGE_COOLDOWN).timeout.connect(func():
 				if is_instance_valid(self):
 					can_dodge = true
@@ -334,7 +345,7 @@ func take_damage(amount: int, attacker: Node2D = null) -> void:
 	if health <= 0:
 		_die()
 	else:
-		_flash_red()
+		_flash_red(damage_invulnerability_duration)
 		_trigger_damage_vignette(0.9)
 
 func heal(amount: int, show_flash: bool = true) -> void:
@@ -449,24 +460,36 @@ func _flash_block() -> void:
 	damage_tween = create_tween()
 	damage_tween.tween_property(player_animation, "modulate", Color.WHITE, 0.15)
 
-func _flash_red() -> void:
+func _flash_red(duration: float = 1.0) -> void:
+	invulnerability_timer = duration
 	is_invulnerable = true
 	if damage_tween:
 		damage_tween.kill()
 	
-	# Reddish damage tint
+	# Reddish damage tint (0.2s)
 	player_animation.modulate = Color(1.0, 0.25, 0.25)
 	damage_tween = create_tween()
 	damage_tween.tween_property(player_animation, "modulate", Color.WHITE, 0.2)
-	# Invulnerability blinking
-	damage_tween.tween_property(player_animation, "modulate:a", 0.4, 0.1)
-	damage_tween.tween_property(player_animation, "modulate:a", 1.0, 0.1)
-	damage_tween.tween_property(player_animation, "modulate:a", 0.4, 0.1)
-	damage_tween.tween_property(player_animation, "modulate:a", 1.0, 0.1)
-	damage_tween.tween_callback(func(): is_invulnerable = false)
+	
+	# Invulnerability blinking over remaining time (e.g. 0.8s: 4 blinks of 0.1s off, 0.1s on)
+	var remaining_time = maxf(0.2, duration - 0.2)
+	var blink_cycle = 0.2
+	var cycles = int(round(remaining_time / blink_cycle))
+	for i in range(cycles):
+		damage_tween.tween_property(player_animation, "modulate:a", 0.4, 0.1)
+		damage_tween.tween_property(player_animation, "modulate:a", 1.0, 0.1)
+	
+	damage_tween.tween_callback(func():
+		if is_instance_valid(self):
+			if invulnerability_timer <= 0.0 and not isDodging:
+				is_invulnerable = false
+			player_animation.modulate.a = 1.0
+	)
 
 func _die() -> void:
 	is_dead = true
+	invulnerability_timer = 0.0
+	is_invulnerable = false
 	velocity = Vector2.ZERO
 	if damage_tween:
 		damage_tween.kill()
@@ -477,15 +500,41 @@ func _die() -> void:
 			mat.set_shader_parameter("intensity", 1.0)
 	
 	player_animation.modulate = Color(1.0, 0.25, 0.25)
+	
+	if not death_fade_rect or not is_instance_valid(death_fade_rect):
+		death_fade_rect = _create_death_fade_overlay()
+	
+	death_fade_rect.color = Color(0, 0, 0, 0)
+	death_fade_rect.visible = true
+	
 	var death_tween = create_tween()
-	death_tween.tween_property(player_animation, "modulate:a", 0.0, 0.6)
-	death_tween.tween_interval(0.3)
-	death_tween.tween_callback(func():
+	death_tween.set_parallel(true)
+	# Fade player character sprite
+	death_tween.tween_property(player_animation, "modulate:a", 0.0, 0.65)
+	# Smoothly fade the entire screen to black
+	death_tween.tween_property(death_fade_rect, "color:a", 1.0, 0.85).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN)
+	
+	# Once fully faded to black, hold briefly then load the death scene
+	death_tween.chain().tween_interval(0.12)
+	death_tween.chain().tween_callback(func():
 		if ResourceLoader.exists("res://scenes/u_dead.tscn"):
 			get_tree().change_scene_to_file.call_deferred("res://scenes/u_dead.tscn")
 		else:
 			get_tree().reload_current_scene.call_deferred()
 	)
+
+func _create_death_fade_overlay() -> ColorRect:
+	var canvas = CanvasLayer.new()
+	canvas.name = "death_fade_layer"
+	canvas.layer = 100
+	add_child(canvas)
+	var rect = ColorRect.new()
+	rect.name = "death_fade_rect"
+	rect.color = Color(0, 0, 0, 0)
+	rect.set_anchors_preset(Control.PRESET_FULL_RECT)
+	rect.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	canvas.add_child(rect)
+	return rect
 
 func _on_player_animation_animation_finished() -> void:
 	if player_animation.animation.begins_with("attack_"):

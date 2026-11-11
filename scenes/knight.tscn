@@ -1,10 +1,10 @@
-[gd_scene format=3 uid="uid://cbm8xpqx7xtqg"]
+[gd_scene load_steps=100 format=3 uid="uid://cbm8xpqx7xtqg"]
 
 [ext_resource type="Script" uid="uid://cmnk4rhy8elpj" path="res://scripts/knight.gd" id="1_3i0j8"]
 [ext_resource type="Texture2D" uid="uid://iw3q6hggoea7" path="res://assets/sprites/knight.png" id="1_dp28g"]
 [ext_resource type="Texture2D" uid="uid://d0w0fq3q2hmi4" path="res://assets/sprites/knight_situp.png" id="3_qxgmm"]
-[ext_resource type="Script" path="res://scripts/boss_health_bar.gd" id="4_boss_bar"]
-[ext_resource type="FontFile" path="res://assets/fonts/PressStart2P-Regular.ttf" id="5_boss_font"]
+[ext_resource type="Script" uid="uid://cutovkvniojyv" path="res://scripts/boss_health_bar.gd" id="4_boss_bar"]
+[ext_resource type="FontFile" uid="uid://vk3mayf7q1yd" path="res://assets/fonts/PressStart2P-Regular.ttf" id="5_boss_font"]
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_0dyjn"]
 radius = 120.0
@@ -380,7 +380,7 @@ animations = [{
 "duration": 1.0,
 "texture": SubResource("AtlasTexture_5fsgc")
 }],
-"loop": 0,
+"loop": false,
 "name": &"attack_down",
 "speed": 7.0
 }, {
@@ -397,7 +397,7 @@ animations = [{
 "duration": 1.0,
 "texture": SubResource("AtlasTexture_14u3r")
 }],
-"loop": 0,
+"loop": false,
 "name": &"attack_side",
 "speed": 7.0
 }, {
@@ -414,7 +414,7 @@ animations = [{
 "duration": 1.0,
 "texture": SubResource("AtlasTexture_4ok4f")
 }],
-"loop": 0,
+"loop": false,
 "name": &"attack_up",
 "speed": 7.0
 }, {
@@ -443,7 +443,7 @@ animations = [{
 "duration": 1.0,
 "texture": SubResource("AtlasTexture_o7g6j")
 }],
-"loop": 0,
+"loop": false,
 "name": &"die_down",
 "speed": 9.0
 }, {
@@ -472,7 +472,7 @@ animations = [{
 "duration": 1.0,
 "texture": SubResource("AtlasTexture_s8y5s")
 }],
-"loop": 0,
+"loop": false,
 "name": &"die_side",
 "speed": 9.0
 }, {
@@ -501,7 +501,7 @@ animations = [{
 "duration": 1.0,
 "texture": SubResource("AtlasTexture_irm4b")
 }],
-"loop": 0,
+"loop": false,
 "name": &"die_up",
 "speed": 9.0
 }, {
@@ -530,7 +530,7 @@ animations = [{
 "duration": 1.0,
 "texture": SubResource("AtlasTexture_4crol")
 }],
-"loop": 1,
+"loop": true,
 "name": &"idle_down",
 "speed": 12.0
 }, {
@@ -559,7 +559,7 @@ animations = [{
 "duration": 1.0,
 "texture": SubResource("AtlasTexture_xf3v0")
 }],
-"loop": 1,
+"loop": true,
 "name": &"idle_side",
 "speed": 12.0
 }, {
@@ -588,7 +588,7 @@ animations = [{
 "duration": 1.0,
 "texture": SubResource("AtlasTexture_1vnbl")
 }],
-"loop": 1,
+"loop": true,
 "name": &"idle_up",
 "speed": 12.0
 }, {
@@ -596,7 +596,7 @@ animations = [{
 "duration": 1.0,
 "texture": SubResource("AtlasTexture_2bkc3")
 }],
-"loop": 1,
+"loop": true,
 "name": &"sit",
 "speed": 5.0
 }, {
@@ -613,7 +613,7 @@ animations = [{
 "duration": 1.0,
 "texture": SubResource("AtlasTexture_541wm")
 }],
-"loop": 0,
+"loop": false,
 "name": &"sit_up",
 "speed": 8.0
 }, {
@@ -642,7 +642,7 @@ animations = [{
 "duration": 1.0,
 "texture": SubResource("AtlasTexture_6i3r5")
 }],
-"loop": 1,
+"loop": true,
 "name": &"walk_down",
 "speed": 9.0
 }, {
@@ -671,7 +671,7 @@ animations = [{
 "duration": 1.0,
 "texture": SubResource("AtlasTexture_370et")
 }],
-"loop": 1,
+"loop": true,
 "name": &"walk_side",
 "speed": 9.0
 }, {
@@ -700,7 +700,7 @@ animations = [{
 "duration": 1.0,
 "texture": SubResource("AtlasTexture_6cslm")
 }],
-"loop": 1,
+"loop": true,
 "name": &"walk_up",
 "speed": 9.0
 }]
@@ -715,55 +715,55 @@ size = Vector2(22, 25)
 radius = 34.0
 height = 98.0
 
-[node name="knight" type="CharacterBody2D" unique_id=979949739]
+[node name="knight" type="CharacterBody2D"]
 z_index = 2
 collision_layer = 4096
 collision_mask = 2242
 motion_mode = 1
 script = ExtResource("1_3i0j8")
 
-[node name="see_area_knight" type="Area2D" parent="." unique_id=146202757]
+[node name="see_area_knight" type="Area2D" parent="."]
 collision_layer = 256
 collision_mask = 3
 
-[node name="see_shape_knight" type="CollisionShape2D" parent="see_area_knight" unique_id=394973261]
+[node name="see_shape_knight" type="CollisionShape2D" parent="see_area_knight"]
 position = Vector2(0, 26)
 shape = SubResource("CircleShape2D_0dyjn")
 debug_color = Color(0.56268877, 0.5276493, 0.5157277, 0.41960785)
 
-[node name="animation" type="AnimatedSprite2D" parent="." unique_id=248108086]
+[node name="animation" type="AnimatedSprite2D" parent="."]
 scale = Vector2(3, 3)
 sprite_frames = SubResource("SpriteFrames_2bkc3")
 animation = &"sit"
 autoplay = "sit"
 
-[node name="ground_collisison_knight" type="CollisionShape2D" parent="." unique_id=1711042237]
+[node name="ground_collisison_knight" type="CollisionShape2D" parent="."]
 position = Vector2(0.5, 39.5)
 shape = SubResource("RectangleShape2D_dp28g")
 debug_color = Color(1.2995303e-06, 0.64123327, 0.3424809, 0.41960785)
 
-[node name="hit_area_knight" type="Area2D" parent="." unique_id=177780698]
+[node name="hit_area_knight" type="Area2D" parent="."]
 collision_layer = 256
 collision_mask = 4
 
-[node name="hit_shape_knight" type="CollisionShape2D" parent="hit_area_knight" unique_id=1488497719]
+[node name="hit_shape_knight" type="CollisionShape2D" parent="hit_area_knight"]
 position = Vector2(1, 33)
 shape = SubResource("RectangleShape2D_3i0j8")
 debug_color = Color(0.9962171, 0, 0.19955888, 0.41960785)
 
-[node name="attack_area_knight" type="Area2D" parent="." unique_id=1869149984]
+[node name="attack_area_knight" type="Area2D" parent="."]
 collision_layer = 256
 collision_mask = 3
 
-[node name="attack_shape_knight" type="CollisionShape2D" parent="attack_area_knight" unique_id=1255419338]
+[node name="attack_shape_knight" type="CollisionShape2D" parent="attack_area_knight"]
 position = Vector2(44, 26)
 shape = SubResource("CapsuleShape2D_qxgmm")
 disabled = true
 
-[node name="boss_hud" type="CanvasLayer" parent="." unique_id=1954810234]
+[node name="boss_hud" type="CanvasLayer" parent="."]
 layer = 11
 
-[node name="top_center_container" type="VBoxContainer" parent="boss_hud" unique_id=1954810235]
+[node name="top_center_container" type="VBoxContainer" parent="boss_hud"]
 visible = false
 anchors_preset = 5
 anchor_left = 0.5
@@ -776,7 +776,7 @@ grow_horizontal = 2
 mouse_filter = 2
 theme_override_constants/separation = 6
 
-[node name="boss_name_label" type="Label" parent="boss_hud/top_center_container" unique_id=1954810236]
+[node name="boss_name_label" type="Label" parent="boss_hud/top_center_container"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.95, 0.88, 0.72, 1)
 theme_override_colors/font_outline_color = Color(0.04, 0.04, 0.06, 1)
@@ -786,7 +786,7 @@ theme_override_font_sizes/font_size = 12
 text = "FALLEN KNIGHT"
 horizontal_alignment = 1
 
-[node name="boss_health_bar" type="Control" parent="boss_hud/top_center_container" unique_id=1954810237]
+[node name="boss_health_bar" type="Control" parent="boss_hud/top_center_container"]
 custom_minimum_size = Vector2(368, 22)
 layout_mode = 2
 size_flags_horizontal = 4
