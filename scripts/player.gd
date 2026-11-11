@@ -37,6 +37,8 @@ var permanent_lifesteal: int = 0
 @export var max_health: int = 100
 var health: int = max_health
 
+@export var is_controllable: bool = true
+
 var isAttacking = false
 var isBlocking = false
 var isDodging = false
@@ -61,9 +63,18 @@ func _ready() -> void:
 	health = max_health
 	if health_bar:
 		health_bar.set_health(health, max_health)
+	if not is_controllable:
+		set_hud_visible(false)
+
+func set_hud_visible(show: bool) -> void:
+	var hud = get_node_or_null("hud")
+	if hud:
+		hud.visible = show
 
 func _physics_process(delta: float) -> void:
 	if is_dead:
+		return
+	if not is_controllable:
 		return
 	
 	# Process active buffs

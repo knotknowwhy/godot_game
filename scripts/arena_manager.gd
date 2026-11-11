@@ -13,6 +13,7 @@ signal arena_completed
 @export var entities_container: Node
 @export var countdown_seconds: int = 3
 @export var wave_intermission_seconds: float = 1.6
+@export var autostart: bool = true
 
 const SKELETON_SCENE = preload("res://scenes/skeleton.tscn")
 const WITCH_DOCTOR_SCENE = preload("res://scenes/witch_doctor.tscn")
@@ -45,12 +46,17 @@ func _ready() -> void:
 	
 	_configure_room()
 	
-	if room_id == 1:
-		has_triggered = true
-		_lock_all_room_doors()
-		get_tree().create_timer(0.8).timeout.connect(func():
-			_start_wave_intro(current_wave_index)
-		)
+	if room_id == 1 and autostart:
+		start_arena()
+
+func start_arena() -> void:
+	if has_triggered:
+		return
+	has_triggered = true
+	_lock_all_room_doors()
+	get_tree().create_timer(0.6).timeout.connect(func():
+		_start_wave_intro(current_wave_index)
+	)
 
 func _configure_room() -> void:
 	match room_id:

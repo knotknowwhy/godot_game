@@ -25,4 +25,4 @@ func _update_difficulty_ui() -> void:
 				difficulty_info.text = "Player HP: x0.8 | Player DMG: x0.8\nEnemy HP: x2.0 | Enemy DMG: x1.5"
 
 func _on_back_button_pressed() -> void:
-	get_tree().change_scene_to_file("res://scenes/main.tscn")
+	get_tree().change_scene_to_file("res://scenes/game.tscn")
