@@ -11,8 +11,8 @@ extends Node2D
 
 var intro_started: bool = false
 
-const MENU_PLAYER_POS = Vector2(8, 172)
-const ROOM1_PLAYER_POS = Vector2(8, 36)
+const MENU_PLAYER_POS = Vector2(10, 157)
+const ROOM1_PLAYER_POS = Vector2(10, 36)
 const MENU_CAMERA_ZOOM = Vector2(6.8, 6.8)
 const GAME_CAMERA_ZOOM = Vector2(4.98, 4.98)
 
