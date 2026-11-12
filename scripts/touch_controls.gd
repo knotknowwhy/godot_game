@@ -1,52 +1,39 @@
 class_name TouchControls
 extends Control
 
-const DEADZONE: float = 0.22
-const FONT_RES = preload("res://assets/fonts/PressStart2P-Regular.ttf")
+const DEADZONE: float = 0.18
 
 var touch_enabled: bool = false
+var _mouse_bindings_stripped: bool = false
 var _joy_touch_id: int = -1
-var _joy_base_default: Vector2 = Vector2(170.0, 900.0)
-var _joy_base_pos: Vector2 = Vector2(170.0, 900.0)
-var _joy_knob_pos: Vector2 = Vector2(170.0, 900.0)
-var _joy_radius: float = 82.0
-var _joy_knob_radius: float = 34.0
+var _joy_base_default: Vector2 = Vector2(260.0, 830.0)
+var _joy_base_pos: Vector2 = Vector2(260.0, 830.0)
+var _joy_knob_pos: Vector2 = Vector2(260.0, 830.0)
+var _joy_radius: float = 138.0
+var _joy_knob_radius: float = 58.0
 var _ui_scale: float = 1.0
 
-# Right-hand action buttons: id -> dictionary
 var _buttons: Dictionary = {
 	"attack": {
 		"action": "Attack_sword",
-		"label": "ATK",
 		"pos": Vector2.ZERO,
-		"radius": 68.0,
+		"radius": 108.0,
 		"touch_id": -1,
 		"pressed": false,
-		"rim": Color(0.76, 0.22, 0.18, 0.92),
-		"fill": Color(0.14, 0.08, 0.09, 0.78),
-		"fill_active": Color(0.42, 0.13, 0.12, 0.92),
 	},
 	"dash": {
 		"action": "Dodge",
-		"label": "DASH",
 		"pos": Vector2.ZERO,
-		"radius": 52.0,
+		"radius": 80.0,
 		"touch_id": -1,
 		"pressed": false,
-		"rim": Color(0.82, 0.68, 0.24, 0.92),
-		"fill": Color(0.13, 0.11, 0.08, 0.78),
-		"fill_active": Color(0.38, 0.31, 0.12, 0.92),
 	},
 	"block": {
 		"action": "Block_sword",
-		"label": "BLK",
 		"pos": Vector2.ZERO,
-		"radius": 52.0,
+		"radius": 80.0,
 		"touch_id": -1,
 		"pressed": false,
-		"rim": Color(0.42, 0.60, 0.78, 0.92),
-		"fill": Color(0.08, 0.11, 0.15, 0.78),
-		"fill_active": Color(0.18, 0.28, 0.40, 0.92),
 	},
 }
 
@@ -62,15 +49,32 @@ func _ready() -> void:
 	set_anchors_preset(Control.PRESET_FULL_RECT)
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
 	
-	touch_enabled = DisplayServer.is_touchscreen_available() or OS.has_feature("web_android") or OS.has_feature("web_ios")
-	visible = touch_enabled
+	var is_touch_device := DisplayServer.is_touchscreen_available() or OS.has_feature("web_android") or OS.has_feature("web_ios")
+	if is_touch_device:
+		_enable_touch_mode()
+	else:
+		visible = false
 	
 	_recalculate_layout()
 	if get_viewport() and not get_viewport().size_changed.is_connected(_recalculate_layout):
 		get_viewport().size_changed.connect(_recalculate_layout)
-	
-	if touch_enabled:
-		_hide_keyboard_hints()
+
+func _enable_touch_mode() -> void:
+	touch_enabled = true
+	visible = true
+	if not _mouse_bindings_stripped:
+		_mouse_bindings_stripped = true
+		# Prevent emulate_mouse_from_touch from firing Attack_sword (LMB) or Block_sword (RMB) on every screen tap
+		for action_name in ["Attack_sword", "Block_sword"]:
+			if InputMap.has_action(action_name):
+				var events := InputMap.action_get_events(action_name)
+				for ev in events:
+					if ev is InputEventMouseButton:
+						InputMap.action_erase_event(action_name, ev)
+		Input.action_release("Attack_sword")
+		Input.action_release("Block_sword")
+	_hide_keyboard_hints()
+	_recalculate_layout()
 
 func _exit_tree() -> void:
 	release_all_inputs()
@@ -92,27 +96,32 @@ func _recalculate_layout() -> void:
 	if vp_size.x <= 1.0 or vp_size.y <= 1.0:
 		vp_size = Vector2(1920.0, 1080.0)
 	
-	_ui_scale = clampf(minf(vp_size.x / 1600.0, vp_size.y / 900.0), 0.72, 1.15)
-	_joy_radius = 84.0 * _ui_scale
-	_joy_knob_radius = 35.0 * _ui_scale
+	var short_side: float = minf(vp_size.x, vp_size.y)
+	_ui_scale = clampf(short_side / 1080.0, 0.80, 1.25)
 	
-	var margin_x: float = maxf(145.0 * _ui_scale, vp_size.x * 0.10)
-	var margin_y: float = maxf(145.0 * _ui_scale, vp_size.y * 0.16)
-	_joy_base_default = Vector2(margin_x, vp_size.y - margin_y)
+	_joy_radius = 140.0 * _ui_scale
+	_joy_knob_radius = 58.0 * _ui_scale
+	
+	var joy_margin_x: float = maxf(250.0 * _ui_scale, vp_size.x * 0.14)
+	var joy_margin_y: float = maxf(235.0 * _ui_scale, vp_size.y * 0.23)
+	_joy_base_default = Vector2(joy_margin_x, vp_size.y - joy_margin_y)
 	if _joy_touch_id == -1:
 		_joy_base_pos = _joy_base_default
 		_joy_knob_pos = _joy_base_default
 	
-	var atk_r: float = 68.0 * _ui_scale
-	var sub_r: float = 52.0 * _ui_scale
+	var atk_r: float = 108.0 * _ui_scale
+	var sub_r: float = 80.0 * _ui_scale
 	_buttons["attack"]["radius"] = atk_r
 	_buttons["dash"]["radius"] = sub_r
 	_buttons["block"]["radius"] = sub_r
 	
-	var atk_pos := Vector2(vp_size.x - maxf(138.0 * _ui_scale, vp_size.x * 0.085), vp_size.y - maxf(132.0 * _ui_scale, vp_size.y * 0.145))
+	var atk_pos := Vector2(
+		vp_size.x - maxf(220.0 * _ui_scale, vp_size.x * 0.12),
+		vp_size.y - maxf(205.0 * _ui_scale, vp_size.y * 0.20)
+	)
 	_buttons["attack"]["pos"] = atk_pos
-	_buttons["dash"]["pos"] = atk_pos + Vector2(-152.0 * _ui_scale, 18.0 * _ui_scale)
-	_buttons["block"]["pos"] = atk_pos + Vector2(-16.0 * _ui_scale, -148.0 * _ui_scale)
+	_buttons["dash"]["pos"] = atk_pos + Vector2(-232.0 * _ui_scale, 28.0 * _ui_scale)
+	_buttons["block"]["pos"] = atk_pos + Vector2(-32.0 * _ui_scale, -228.0 * _ui_scale)
 	queue_redraw()
 
 func _input(event: InputEvent) -> void:
@@ -120,10 +129,7 @@ func _input(event: InputEvent) -> void:
 		return
 	
 	if not touch_enabled:
-		touch_enabled = true
-		visible = true
-		_recalculate_layout()
-		_hide_keyboard_hints()
+		_enable_touch_mode()
 	
 	if not is_visible_in_tree() or modulate.a <= 0.05:
 		return
@@ -131,33 +137,43 @@ func _input(event: InputEvent) -> void:
 	var vp_size: Vector2 = get_viewport_rect().size
 	if event is InputEventScreenTouch:
 		var st := event as InputEventScreenTouch
-		var pos: Vector2 = _canvas_pos(st.position)
+		var pos: Vector2 = _to_local_canvas_pos(st.position)
 		if st.pressed:
-			# 1. Check right-side action buttons first (with generous 1.25x hit radius per WCAG touch target guidelines)
+			# 1. Check right-side action buttons first (with generous 1.2x hit padding)
+			var best_key: String = ""
+			var best_dist: float = INF
 			for b_key in _buttons.keys():
 				var btn: Dictionary = _buttons[b_key]
-				var hit_r: float = float(btn["radius"]) * 1.24
-				if pos.distance_to(btn["pos"]) <= hit_r and int(btn["touch_id"]) == -1:
-					btn["touch_id"] = st.index
-					btn["pressed"] = true
-					Input.action_press(btn["action"])
-					queue_redraw()
-					return
+				var hit_r: float = float(btn["radius"]) * 1.22
+				var d: float = pos.distance_to(btn["pos"])
+				if d <= hit_r and d < best_dist and int(btn["touch_id"]) == -1:
+					best_dist = d
+					best_key = b_key
+			if best_key != "":
+				var btn: Dictionary = _buttons[best_key]
+				btn["touch_id"] = st.index
+				btn["pressed"] = true
+				Input.action_press(btn["action"])
+				queue_redraw()
+				get_viewport().set_input_as_handled()
+				return
 			
-			# 2. Check left half of screen for virtual joystick
-			if _joy_touch_id == -1 and pos.x <= vp_size.x * 0.48 and pos.y >= vp_size.y * 0.25:
+			# 2. Left half of screen controls the virtual joystick
+			if _joy_touch_id == -1 and pos.x <= vp_size.x * 0.52 and pos.y >= vp_size.y * 0.18:
 				_joy_touch_id = st.index
 				_joy_base_pos = Vector2(
-					clampf(pos.x, _joy_radius + 24.0, vp_size.x * 0.42),
-					clampf(pos.y, vp_size.y * 0.35, vp_size.y - _joy_radius - 24.0)
+					clampf(pos.x, _joy_radius + 28.0, vp_size.x * 0.44),
+					clampf(pos.y, vp_size.y * 0.28, vp_size.y - _joy_radius - 28.0)
 				)
 				_update_joystick(pos)
 				queue_redraw()
+				get_viewport().set_input_as_handled()
+				return
 		else:
-			# Touch released
 			if st.index == _joy_touch_id:
 				_reset_joystick()
 				queue_redraw()
+				get_viewport().set_input_as_handled()
 				return
 			for b_key in _buttons.keys():
 				var btn: Dictionary = _buttons[b_key]
@@ -166,20 +182,22 @@ func _input(event: InputEvent) -> void:
 					btn["pressed"] = false
 					Input.action_release(btn["action"])
 					queue_redraw()
+					get_viewport().set_input_as_handled()
 					return
 	
 	elif event is InputEventScreenDrag:
 		var sd := event as InputEventScreenDrag
 		if sd.index == _joy_touch_id:
-			var pos: Vector2 = _canvas_pos(sd.position)
+			var pos: Vector2 = _to_local_canvas_pos(sd.position)
 			_update_joystick(pos)
 			queue_redraw()
+			get_viewport().set_input_as_handled()
 
-func _canvas_pos(raw_pos: Vector2) -> Vector2:
-	var vp := get_viewport()
-	if not vp:
-		return raw_pos
-	return vp.get_canvas_transform().affine_inverse() * raw_pos
+func _to_local_canvas_pos(screen_pos: Vector2) -> Vector2:
+	# Inside a CanvasLayer (follow_viewport_enabled = false), get_global_transform_with_canvas()
+	# maps directly between Control local coordinates and screen/viewport event coordinates
+	# without mixing in Camera2D world transform.
+	return get_global_transform_with_canvas().affine_inverse() * screen_pos
 
 func _update_joystick(touch_pos: Vector2) -> void:
 	var delta: Vector2 = touch_pos - _joy_base_pos
@@ -204,7 +222,7 @@ func _update_joystick(touch_pos: Vector2) -> void:
 func _set_move_action(action: String, active: bool, strength: float) -> void:
 	var prev: bool = bool(_move_actions_state.get(action, false))
 	if active:
-		Input.action_press(action, clampf(strength, 0.4, 1.0))
+		Input.action_press(action, clampf(strength, 0.45, 1.0))
 		_move_actions_state[action] = true
 	elif prev:
 		Input.action_release(action)
@@ -231,75 +249,66 @@ func _draw() -> void:
 	if not touch_enabled:
 		return
 	
-	# 1. Draw Left Virtual Joystick
+	# Unified sleek white-gray semi-transparent palette
 	var joy_active: bool = (_joy_touch_id != -1)
-	var base_fill := Color(0.06, 0.06, 0.09, 0.72 if joy_active else 0.52)
-	var base_rim := Color(0.76, 0.64, 0.24, 0.85) if joy_active else Color(0.32, 0.33, 0.40, 0.68)
+	var base_fill := Color(0.86, 0.88, 0.92, 0.16 if joy_active else 0.10)
+	var base_rim := Color(0.94, 0.95, 0.98, 0.44 if joy_active else 0.26)
 	draw_circle(_joy_base_pos, _joy_radius, base_fill)
-	draw_arc(_joy_base_pos, _joy_radius, 0.0, TAU, 48, base_rim, 2.5, true)
-	draw_arc(_joy_base_pos, _joy_radius * DEADZONE, 0.0, TAU, 24, Color(0.28, 0.29, 0.35, 0.38), 1.5, true)
+	draw_arc(_joy_base_pos, _joy_radius, 0.0, TAU, 64, base_rim, 2.2 * _ui_scale, true)
 	
-	# Cardinal directional ticks on joystick ring
-	for dir in [Vector2.UP, Vector2.DOWN, Vector2.LEFT, Vector2.RIGHT]:
-		var p0: Vector2 = _joy_base_pos + dir * (_joy_radius - 10.0 * _ui_scale)
-		var p1: Vector2 = _joy_base_pos + dir * (_joy_radius - 3.0 * _ui_scale)
-		draw_line(p0, p1, base_rim, 2.0)
-	
-	if joy_active and _joy_base_pos.distance_to(_joy_knob_pos) > 2.0:
-		draw_line(_joy_base_pos, _joy_knob_pos, Color(0.84, 0.72, 0.30, 0.55), 3.0)
-	
-	var knob_fill := Color(0.84, 0.72, 0.28, 0.92) if joy_active else Color(0.22, 0.23, 0.29, 0.82)
-	var knob_rim := Color(0.96, 0.90, 0.65, 0.95) if joy_active else Color(0.52, 0.54, 0.62, 0.85)
+	var knob_fill := Color(0.95, 0.96, 0.98, 0.56 if joy_active else 0.34)
+	var knob_rim := Color(1.0, 1.0, 1.0, 0.72 if joy_active else 0.45)
 	draw_circle(_joy_knob_pos, _joy_knob_radius, knob_fill)
-	draw_arc(_joy_knob_pos, _joy_knob_radius, 0.0, TAU, 32, knob_rim, 2.5, true)
+	draw_arc(_joy_knob_pos, _joy_knob_radius, 0.0, TAU, 48, knob_rim, 2.0 * _ui_scale, true)
 	
-	# 2. Draw Right Action Buttons
 	for b_key in _buttons.keys():
 		var btn: Dictionary = _buttons[b_key]
+		var is_down: bool = bool(btn["pressed"])
 		var center: Vector2 = btn["pos"]
-		var r: float = float(btn["radius"]) * (0.93 if bool(btn["pressed"]) else 1.0)
-		var fill_col: Color = btn["fill_active"] if bool(btn["pressed"]) else btn["fill"]
-		var rim_col: Color = btn["rim"]
+		var r: float = float(btn["radius"]) * (0.94 if is_down else 1.0)
 		
-		# Outer dark shadow ring + filled circle + crisp border
-		draw_circle(center + Vector2(0, 3.0), r + 2.0, Color(0.02, 0.02, 0.04, 0.65))
-		draw_circle(center, r, fill_col)
-		draw_arc(center, r, 0.0, TAU, 40, rim_col, 3.0 if bool(btn["pressed"]) else 2.2, true)
-		draw_arc(center, r - 5.0 * _ui_scale, 0.0, TAU, 36, Color(rim_col.r, rim_col.g, rim_col.b, 0.24), 1.2, true)
+		var btn_fill := Color(0.92, 0.94, 0.97, 0.32 if is_down else 0.13)
+		var btn_rim := Color(0.96, 0.97, 1.0, 0.70 if is_down else 0.34)
+		var icon_col := Color(0.98, 0.99, 1.0, 0.92 if is_down else 0.58)
 		
-		# Draw crisp geometric weapon/action emblem
-		var icon_center := center + Vector2(0.0, -7.0 * _ui_scale)
-		var icon_col := Color(0.95, 0.94, 0.92, 0.96)
+		draw_circle(center, r, btn_fill)
+		draw_arc(center, r, 0.0, TAU, 56, btn_rim, (2.6 if is_down else 2.0) * _ui_scale, true)
+		
+		# Sleek monochrome geometric icons (no noisy text or rainbow rims)
 		if b_key == "attack":
-			# Angled broadsword emblem
-			var s := 18.0 * _ui_scale
-			draw_line(icon_center + Vector2(-s * 0.75, s * 0.75), icon_center + Vector2(s * 0.85, -s * 0.85), icon_col, 3.6 * _ui_scale)
-			draw_line(icon_center + Vector2(-s * 0.62, s * 0.12), icon_center + Vector2(-s * 0.12, s * 0.62), rim_col.lightened(0.25), 3.0 * _ui_scale)
+			# Minimalist diagonal sword silhouette
+			var s := r * 0.42
+			var dir := Vector2(1.0, -1.0).normalized()
+			var perp := Vector2(-dir.y, dir.x)
+			# Blade
+			draw_line(center - dir * (s * 0.45), center + dir * (s * 0.95), icon_col, 4.2 * _ui_scale, true)
+			# Crossguard
+			var guard_c := center - dir * (s * 0.32)
+			draw_line(guard_c - perp * (s * 0.42), guard_c + perp * (s * 0.42), icon_col, 3.2 * _ui_scale, true)
+			# Grip + pommel
+			draw_line(guard_c, center - dir * (s * 0.85), icon_col, 3.0 * _ui_scale, true)
+			draw_circle(center - dir * (s * 0.90), 2.8 * _ui_scale, icon_col)
 		elif b_key == "dash":
-			# Double forward chevron emblem
-			var s := 11.0 * _ui_scale
-			for ox in [-6.0 * _ui_scale, 5.0 * _ui_scale]:
-				var c := icon_center + Vector2(ox, 0.0)
-				draw_line(c + Vector2(-s * 0.5, -s * 0.7), c + Vector2(s * 0.45, 0.0), icon_col, 2.8 * _ui_scale)
-				draw_line(c + Vector2(s * 0.45, 0.0), c + Vector2(-s * 0.5, s * 0.7), icon_col, 2.8 * _ui_scale)
+			# Sleek twin forward chevrons
+			var s := r * 0.34
+			for ox in [-s * 0.38, s * 0.32]:
+				var c := center + Vector2(ox, 0.0)
+				var pts := PackedVector2Array([
+					c + Vector2(-s * 0.36, -s * 0.62),
+					c + Vector2(s * 0.36, 0.0),
+					c + Vector2(-s * 0.36, s * 0.62),
+				])
+				draw_polyline(pts, icon_col, 3.2 * _ui_scale, true)
 		elif b_key == "block":
-			# Heater shield outline emblem
-			var s := 12.0 * _ui_scale
+			# Minimalist shield outline
+			var s := r * 0.40
 			var pts := PackedVector2Array([
-				icon_center + Vector2(-s * 0.75, -s * 0.75),
-				icon_center + Vector2(s * 0.75, -s * 0.75),
-				icon_center + Vector2(s * 0.75, s * 0.05),
-				icon_center + Vector2(0.0, s * 0.90),
-				icon_center + Vector2(-s * 0.75, s * 0.05),
-				icon_center + Vector2(-s * 0.75, -s * 0.75),
+				center + Vector2(0.0, -s * 0.88),
+				center + Vector2(s * 0.78, -s * 0.56),
+				center + Vector2(s * 0.68, s * 0.18),
+				center + Vector2(0.0, s * 0.92),
+				center + Vector2(-s * 0.68, s * 0.18),
+				center + Vector2(-s * 0.78, -s * 0.56),
+				center + Vector2(0.0, -s * 0.88),
 			])
-			draw_polyline(pts, icon_col, 2.6 * _ui_scale)
-		
-		# Button label underneath icon
-		if FONT_RES:
-			var fsize: int = maxi(9, int(round(11.0 * _ui_scale)))
-			var lbl: String = str(btn["label"])
-			var tsize: Vector2 = FONT_RES.get_string_size(lbl, HORIZONTAL_ALIGNMENT_CENTER, -1, fsize)
-			var tpos := Vector2(center.x - tsize.x * 0.5, center.y + r * 0.56)
-			draw_string_outline(FONT_RES, tpos, lbl, HORIZONTAL_ALIGNMENT_LEFT, -1, fsize, 4, Color(0.04, 0.04, 0.06, 0.95))
-			draw_string(FONT_RES, tpos, lbl, HORIZONTAL_ALIGNMENT_LEFT, -1, fsize, Color(0.92, 0.92, 0.95, 0.95))
+			draw_polyline(pts, icon_col, 3.0 * _ui_scale, true)

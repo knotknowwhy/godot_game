@@ -208,7 +208,8 @@ func _physics_process(delta: float) -> void:
 				player_animation.play("idle_up")
 	
 	# attack animation trigger
-	if Input.is_action_just_pressed("Attack_sword") and not isBlocking and not isDodging and not isAttacking:
+	var want_attack: bool = Input.is_action_just_pressed("Attack_sword") or (touch_controls != null and bool(touch_controls.get("touch_enabled")) and Input.is_action_pressed("Attack_sword"))
+	if want_attack and not isBlocking and not isDodging and not isAttacking:
 		isAttacking = true
 		attack_timer = 0.0
 		attack_can_cancel = false
