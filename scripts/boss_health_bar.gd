@@ -13,9 +13,18 @@ extends Control
 var current_ratio: float = 1.0
 var ghost_ratio: float = 1.0
 var ghost_tween: Tween = null
+var is_enraged: bool = false
 
 func _ready() -> void:
 	custom_minimum_size = Vector2(bar_width + 8, bar_height + 8)
+	queue_redraw()
+
+func set_enraged(enraged: bool) -> void:
+	is_enraged = enraged
+	if is_enraged:
+		outer_trim_color = Color(0.85, 0.28, 0.18, 0.95)
+		fill_color = Color(0.95, 0.22, 0.12, 1.0)
+		highlight_color = Color(1.0, 0.68, 0.32, 0.8)
 	queue_redraw()
 
 func _draw() -> void:
@@ -35,6 +44,9 @@ func _draw() -> void:
 		draw_rect(Rect2(ox, oy, fill_w, bar_height), fill_color)
 		# Top specular highlight
 		draw_rect(Rect2(ox, oy, fill_w, 3), highlight_color)
+	# 50% Phase 2 threshold notch
+	var mid_x = ox + bar_width * 0.5
+	draw_rect(Rect2(mid_x - 1.0, oy, 2.0, bar_height), Color(0.05, 0.05, 0.07, 0.75))
 
 func set_health(current: float, maximum: float) -> void:
 	var target_ratio = clampf(current / maxf(1.0, maximum), 0.0, 1.0)
