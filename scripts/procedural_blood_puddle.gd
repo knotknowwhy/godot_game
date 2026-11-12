@@ -2,8 +2,8 @@ extends Node2D
 
 # Procedural Blood Puddle that organically pools and expands across dungeon tiles.
 
-@export var max_radius: float = 30.0
-@export var growth_duration: float = 3.5
+@export var max_radius: float = 13.5
+@export var growth_duration: float = 3.4
 @export var segments: int = 64
 
 var current_progress: float = 0.0 # 0.0 to 1.0
@@ -20,7 +20,9 @@ var inner_color: Color = Color(0.52, 0.045, 0.075, 0.95) # Fresh arterial crimso
 var sheen_color: Color = Color(0.78, 0.18, 0.22, 0.35) # Glossy surface reflection
 
 func _ready() -> void:
-	z_index = -1 # Draw beneath player sprite onto floor
+	z_index = 0 # Render at parent's z_index (above floor tilemap z=1) and behind parent's sprite via child index 0
+	if get_parent():
+		get_parent().move_child.call_deferred(self, 0)
 	_generate_procedural_shape()
 
 func _generate_procedural_shape() -> void:
@@ -31,7 +33,7 @@ func _generate_procedural_shape() -> void:
 		harmonics.append({
 			"freq": f,
 			"phase": randf_range(0.0, TAU),
-			"amp": randf_range(0.06, 0.22)
+			"amp": randf_range(0.04, 0.15)
 		})
 	
 	# Randomize 3 to 5 creeping fluid lobes
@@ -40,18 +42,18 @@ func _generate_procedural_shape() -> void:
 	for i in range(num_lobes):
 		lobes.append({
 			"angle": randf_range(0.0, TAU),
-			"width": randf_range(0.35, 0.75),
-			"reach": randf_range(1.25, 1.55),
+			"width": randf_range(0.35, 0.68),
+			"reach": randf_range(1.12, 1.32),
 			"delay": randf_range(0.05, 0.25) # Reaches forward with slight fluid lag
 		})
 	
-	# Randomize 5 to 8 satellite droplets around the periphery
+	# Randomize 4 to 7 satellite droplets around the periphery
 	droplets.clear()
-	var num_drops = randi_range(5, 8)
+	var num_drops = randi_range(4, 7)
 	for i in range(num_drops):
 		var angle = randf_range(0.0, TAU)
-		var dist_mult = randf_range(1.15, 1.45)
-		var r = randf_range(1.2, 2.8)
+		var dist_mult = randf_range(1.10, 1.32)
+		var r = randf_range(0.7, 1.6)
 		droplets.append({
 			"angle": angle,
 			"dist_mult": dist_mult,

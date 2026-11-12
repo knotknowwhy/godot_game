@@ -1727,6 +1727,9 @@ func _die() -> void:
 	_lock_arena_doors(false)
 	enemy_died.emit(self)
 	velocity = Vector2.ZERO
+	set_collision_layer_value(1, false)
+	collision_layer = 0
+	collision_mask = 0
 	hit_shape_knight.set_deferred("disabled", true)
 	ground_collisison_knight.set_deferred("disabled", true)
 	if attack_shape_knight:
@@ -1742,41 +1745,289 @@ func _die() -> void:
 		ht.tween_property(health_bar, "modulate:a", 0.0, 0.25)
 	_set_boss_bar_visible(false)
 	
-	_try_spawn_drop()
-	
 	animation.position = Vector2.ZERO
 	animation.scale = base_anim_scale
 	animation.modulate = Color.WHITE
-	_play_death_animation()
 	
-	var death_tween = create_tween()
-	death_tween.tween_interval(0.9)
-	death_tween.tween_property(animation, "modulate:a", 0.0, 0.3)
-	death_tween.tween_callback(queue_free)
+	_start_coronation_cutscene()
 
-func _try_spawn_drop() -> void:
-	if not PICKUP_SCENE:
-		return
-	if randf() > 0.70:
+func _start_coronation_cutscene() -> void:
+	var p = _find_player_node()
+	if p and is_instance_valid(p) and p.has_method("prepare_for_cutscene"):
+		p.prepare_for_cutscene()
+	
+	# Keep boss corpse inside clear arena floor (away from throne steps & walls) so the head is always accessible
+	var safe_boss_pos := global_position.clamp(Vector2(316.0, -192.0), Vector2(468.0, -82.0))
+	# Orient die_side so the fallen head points toward the open center of the room
+	var fall_head_left: bool = (safe_boss_pos.x >= 392.0)
+	animation.flip_h = not fall_head_left
+	animation.speed_scale = 0.85
+	animation.play("die_side")
+	
+	if global_position.distance_to(safe_boss_pos) > 1.0:
+		var slide_tw = create_tween()
+		slide_tw.tween_property(self, "global_position", safe_boss_pos, 0.30)\
+			.set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+	
+	# Spawn smaller procedural blood puddle beneath the fallen boss when his armor hits the stone floor
+	get_tree().create_timer(0.40).timeout.connect(func():
+		if not is_instance_valid(self):
+			return
+		_trigger_screen_shake(4.2, 0.22)
+		_spawn_slam_dust_particles()
+		_spawn_boss_blood_puddle(fall_head_left)
+	)
+	
+	if not p or not is_instance_valid(p) or p.get("is_dead"):
 		return
 	
-	var pickup = PICKUP_SCENE.instantiate()
-	pickup.global_position = _get_body_center()
+	var cam: Camera2D = p.get_node_or_null("Camera2D")
+	if cam:
+		var cam_tw = create_tween()
+		cam_tw.tween_property(cam, "zoom", Vector2(6.0, 6.0), 1.35)\
+			.set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
 	
-	var roll = randf()
-	if player_target and is_instance_valid(player_target) and "health" in player_target and "max_health" in player_target and player_target.health <= player_target.max_health * 0.5:
-		if roll < 0.60:
-			pickup.pickup_type = 0
-		elif roll < 0.80:
-			pickup.pickup_type = 1
-		else:
-			pickup.pickup_type = 2
+	# World position of the boss's crowned head once collapsed in die_side (frame 7)
+	var head_offset := Vector2(-42.0 if fall_head_left else 42.0, 31.0)
+	var head_world_pos: Vector2 = safe_boss_pos + head_offset
+	var stand_by_head_pos: Vector2 = head_world_pos + Vector2(-13.0 if fall_head_left else 13.0, -4.0)
+	
+	# Step 1: Simultaneously walk the player up to the boss's head while the boss collapses and bleeds
+	var walk_dist: float = p.global_position.distance_to(stand_by_head_pos)
+	var walk_to_head_time: float = maxf(1.10, walk_dist / 56.0)
+	var p_anim: AnimatedSprite2D = p.get_node_or_null("player_animation")
+	
+	_play_player_walk_anim(p_anim, p.global_position.direction_to(stand_by_head_pos))
+	
+	var seq = create_tween()
+	seq.tween_property(p, "global_position", stand_by_head_pos, walk_to_head_time)\
+		.set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+	
+	# Step 2: Face the boss's head and reach down to take the crown
+	seq.tween_callback(func():
+		if p_anim:
+			p_anim.play("idle_right" if fall_head_left else "idle_left")
+	)
+	seq.tween_interval(0.32)
+	seq.tween_callback(func():
+		if p_anim:
+			var reach_tw = create_tween()
+			reach_tw.tween_property(p_anim, "position", Vector2(3.0 if fall_head_left else -3.0, 2.0), 0.20)\
+				.set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+	)
+	seq.tween_interval(0.22)
+	
+	# Step 3: Remove crown from boss texture, lift crown sprite onto player's head, and equip player crown texture
+	seq.tween_callback(func():
+		_remove_boss_crown()
+		_animate_crown_transfer_to_player(head_world_pos, p, p_anim)
+	)
+	seq.tween_interval(1.05)
+	
+	# Step 4: Walk the newly crowned player up to the Throne
+	var throne_Approach := Vector2(392.0, -204.0)
+	var throne_Seat := Vector2(392.0, -235.0)
+	
+	seq.tween_callback(func():
+		p.z_index = 3
+		_play_player_walk_anim(p_anim, stand_by_head_pos.direction_to(throne_Approach))
+	)
+	var approach_time: float = clampf(stand_by_head_pos.distance_to(throne_Approach) / 54.0, 0.45, 1.80)
+	seq.tween_property(p, "global_position", throne_Approach, approach_time)\
+		.set_trans(Tween.TRANS_LINEAR)
+	
+	# Walk straight up the throne steps onto the throne cushion
+	seq.tween_callback(func():
+		if p_anim:
+			p_anim.play("walk_up")
+	)
+	seq.tween_property(p, "global_position", throne_Seat, 0.65)\
+		.set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
+	
+	# Step 5: Turn around and sit down on the Throne wearing the Crown
+	seq.tween_callback(func():
+		if p_anim:
+			p_anim.play("idle_down")
+	)
+	seq.tween_interval(0.30)
+	seq.tween_callback(func():
+		if p_anim:
+			if p_anim.sprite_frames and p_anim.sprite_frames.has_animation(&"sit_throne"):
+				p_anim.play("sit_throne")
+			else:
+				p_anim.play("idle_down")
+			p_anim.scale = Vector2(1.10, 0.90)
+			var sit_tw = create_tween()
+			sit_tw.tween_property(p_anim, "scale", Vector2.ONE, 0.22)\
+				.set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+		if cam:
+			var final_cam_tw = create_tween()
+			final_cam_tw.tween_property(cam, "zoom", Vector2(6.8, 6.8), 1.6)\
+				.set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
+		_trigger_screen_shake(2.2, 0.14)
+	)
+	seq.tween_interval(2.0)
+	seq.tween_callback(func():
+		_show_coronation_banner(p)
+	)
+
+func _play_player_walk_anim(p_anim: AnimatedSprite2D, dir: Vector2) -> void:
+	if not p_anim:
+		return
+	if absf(dir.x) > absf(dir.y):
+		p_anim.play("walk_right" if dir.x > 0.0 else "walk_left")
 	else:
-		if roll < 0.45:
-			pickup.pickup_type = 0
-		elif roll < 0.72:
-			pickup.pickup_type = 1
-		else:
-			pickup.pickup_type = 2
+		p_anim.play("walk_down" if dir.y > 0.0 else "walk_up")
+
+func _spawn_boss_blood_puddle(fall_head_left: bool) -> void:
+	var puddle_script = load("res://scripts/procedural_blood_puddle.gd")
+	if not puddle_script:
+		return
+	var puddle = Node2D.new()
+	puddle.set_script(puddle_script)
+	puddle.max_radius = 16.5
+	puddle.growth_duration = 3.2
+	puddle.position = Vector2(-20.0 if fall_head_left else 20.0, 32.0)
+	add_child(puddle)
+	move_child(puddle, 0)
+
+func _remove_boss_crown() -> void:
+	if not animation or not animation.sprite_frames:
+		return
+	var uncrowned_tex: Texture2D = load("res://assets/sprites/knight_uncrowned.png")
+	var situp_uncrowned_tex: Texture2D = load("res://assets/sprites/knight_situp_uncrowned.png")
+	if not uncrowned_tex:
+		return
 	
-	get_parent().call_deferred("add_child", pickup)
+	var cur_anim: StringName = animation.animation
+	var cur_frame: int = animation.frame
+	var new_frames: SpriteFrames = animation.sprite_frames.duplicate(true)
+	
+	for anim_name in new_frames.get_animation_names():
+		var f_count = new_frames.get_frame_count(anim_name)
+		for i in range(f_count):
+			var tex = new_frames.get_frame_texture(anim_name, i)
+			if tex is AtlasTexture:
+				var dup_tex: AtlasTexture = tex.duplicate()
+				if anim_name == &"sit" or anim_name == &"sit_up":
+					if situp_uncrowned_tex:
+						dup_tex.atlas = situp_uncrowned_tex
+				else:
+					dup_tex.atlas = uncrowned_tex
+				new_frames.set_frame(anim_name, i, dup_tex, new_frames.get_frame_duration(anim_name, i))
+	
+	animation.sprite_frames = new_frames
+	animation.play(cur_anim)
+	animation.pause()
+	animation.frame = cur_frame
+
+func _animate_crown_transfer_to_player(from_world_pos: Vector2, p: Node2D, p_anim: AnimatedSprite2D) -> void:
+	var crown_tex: Texture2D = load("res://assets/sprites/crown.png")
+	var crown_sprite := Sprite2D.new()
+	if crown_tex:
+		crown_sprite.texture = crown_tex
+	crown_sprite.z_index = 6
+	crown_sprite.global_position = from_world_pos
+	crown_sprite.scale = Vector2(1.15, 1.15)
+	get_parent().add_child(crown_sprite)
+	
+	if p_anim:
+		var straighten_tw = create_tween()
+		straighten_tw.tween_property(p_anim, "position", Vector2.ZERO, 0.25)
+	
+	var target_head_pos: Vector2 = p.global_position + Vector2(0.0, -7.0)
+	var mid_arc_pos: Vector2 = (from_world_pos + target_head_pos) * 0.5 + Vector2(0.0, -14.0)
+	
+	var c_tw = create_tween()
+	c_tw.tween_method(func(t: float):
+		if is_instance_valid(crown_sprite):
+			var p0 = from_world_pos.lerp(mid_arc_pos, t)
+			var p1 = mid_arc_pos.lerp(target_head_pos, t)
+			crown_sprite.global_position = p0.lerp(p1, t)
+			crown_sprite.scale = Vector2.ONE * lerpf(1.15, 0.65, t)
+	, 0.0, 1.0, 0.52).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+	
+	c_tw.tween_callback(func():
+		if is_instance_valid(crown_sprite):
+			crown_sprite.queue_free()
+		if is_instance_valid(p) and p.has_method("equip_crown"):
+			p.equip_crown()
+		if p_anim:
+			p_anim.play("idle_down")
+			p_anim.modulate = Color(1.65, 1.48, 0.85)
+			var glint_tw = create_tween()
+			glint_tw.tween_property(p_anim, "modulate", Color.WHITE, 0.35)
+		_spawn_coronation_sparkles(p.global_position + Vector2(0.0, -7.0))
+	)
+
+func _spawn_coronation_sparkles(world_pos: Vector2) -> void:
+	if not get_parent():
+		return
+	var p := CPUParticles2D.new()
+	p.amount = 14
+	p.lifetime = 0.45
+	p.one_shot = true
+	p.explosiveness = 0.92
+	p.z_index = 6
+	p.global_position = world_pos
+	p.direction = Vector2.UP
+	p.spread = 180.0
+	p.gravity = Vector2(0, 20)
+	p.initial_velocity_min = 14.0
+	p.initial_velocity_max = 32.0
+	p.scale_amount_min = 1.2
+	p.scale_amount_max = 2.2
+	p.color = Color(1.0, 0.88, 0.42, 0.95)
+	get_parent().add_child(p)
+	p.emitting = true
+	get_tree().create_timer(0.6).timeout.connect(p.queue_free)
+
+func _show_coronation_banner(p: Node2D) -> void:
+	if not p or not is_instance_valid(p):
+		return
+	var layer := CanvasLayer.new()
+	layer.name = "coronation_ui"
+	layer.layer = 50
+	p.add_child(layer)
+	
+	var root := VBoxContainer.new()
+	root.set_anchors_preset(Control.PRESET_CENTER_BOTTOM)
+	root.anchor_left = 0.5
+	root.anchor_right = 0.5
+	root.anchor_top = 1.0
+	root.anchor_bottom = 1.0
+	root.offset_left = -220.0
+	root.offset_right = 220.0
+	root.offset_top = -120.0
+	root.offset_bottom = -36.0
+	root.alignment = BoxContainer.ALIGNMENT_CENTER
+	root.add_theme_constant_override("separation", 14)
+	root.modulate.a = 0.0
+	layer.add_child(root)
+	
+	var font = load("res://assets/fonts/PressStart2P-Regular.ttf")
+	var title := Label.new()
+	title.text = "THE THRONE IS YOURS"
+	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	if font:
+		title.add_theme_font_override("font", font)
+	title.add_theme_font_size_override("font_size", 16)
+	title.add_theme_color_override("font_color", Color(0.94, 0.84, 0.46, 1.0))
+	title.add_theme_color_override("font_outline_color", Color(0.05, 0.04, 0.06, 1.0))
+	title.add_theme_constant_override("outline_size", 6)
+	root.add_child(title)
+	
+	var btn := Button.new()
+	btn.text = "PLAY AGAIN"
+	btn.custom_minimum_size = Vector2(180, 34)
+	btn.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+	if font:
+		btn.add_theme_font_override("font", font)
+	btn.add_theme_font_size_override("font_size", 10)
+	btn.pressed.connect(func():
+		get_tree().change_scene_to_file("res://scenes/game.tscn")
+	)
+	root.add_child(btn)
+	
+	var tw = create_tween()
+	tw.tween_property(root, "modulate:a", 1.0, 0.85).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)

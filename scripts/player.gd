@@ -737,9 +737,76 @@ func _spawn_blood_pool() -> void:
 		return
 	var puddle = Node2D.new()
 	puddle.set_script(puddle_script)
-	puddle.z_index = -1
-	puddle.position = (player_animation.position if player_animation else Vector2.ZERO) + Vector2(0, 6)
+	puddle.max_radius = 12.5
+	puddle.growth_duration = 3.4
+	puddle.position = (player_animation.position if player_animation else Vector2.ZERO) + Vector2(0, 4)
 	add_child(puddle)
+	move_child(puddle, 0)
+
+func prepare_for_cutscene() -> void:
+	is_controllable = false
+	is_invulnerable = true
+	invulnerability_timer = 999.0
+	velocity = Vector2.ZERO
+	isAttacking = false
+	isBlocking = false
+	isDodging = false
+	if attack_shape:
+		attack_shape.set_deferred("disabled", true)
+	if block_shape:
+		block_shape.set_deferred("disabled", true)
+	var col_shape = get_node_or_null("player")
+	if col_shape:
+		col_shape.set_deferred("disabled", true)
+	if damage_tween and damage_tween.is_running():
+		damage_tween.kill()
+	if player_animation:
+		player_animation.modulate = Color.WHITE
+		player_animation.scale = Vector2.ONE
+		player_animation.rotation = 0.0
+		player_animation.position = Vector2.ZERO
+	var hud_margin = get_node_or_null("hud/margin")
+	var hud_hint = get_node_or_null("hud/controls_hint")
+	var hud_tween = create_tween()
+	hud_tween.set_parallel(true)
+	if hud_margin:
+		hud_tween.tween_property(hud_margin, "modulate:a", 0.0, 0.4)
+	if hud_hint:
+		hud_tween.tween_property(hud_hint, "modulate:a", 0.0, 0.4)
+
+func equip_crown() -> void:
+	if not player_animation or not player_animation.sprite_frames:
+		return
+	var crowned_tex: Texture2D = load("res://assets/sprites/player_sheet_crowned.png")
+	if not crowned_tex:
+		return
+	
+	var cur_anim: StringName = player_animation.animation
+	var cur_frame: int = player_animation.frame
+	var new_frames: SpriteFrames = player_animation.sprite_frames.duplicate(true)
+	
+	for anim_name in new_frames.get_animation_names():
+		var f_count = new_frames.get_frame_count(anim_name)
+		for i in range(f_count):
+			var tex = new_frames.get_frame_texture(anim_name, i)
+			if tex is AtlasTexture:
+				var dup_tex: AtlasTexture = tex.duplicate()
+				dup_tex.atlas = crowned_tex
+				new_frames.set_frame(anim_name, i, dup_tex, new_frames.get_frame_duration(anim_name, i))
+	
+	if not new_frames.has_animation(&"sit_throne"):
+		new_frames.add_animation(&"sit_throne")
+		new_frames.set_animation_loop(&"sit_throne", true)
+		new_frames.set_animation_speed(&"sit_throne", 4.0)
+		for c in range(6):
+			var sit_atlas := AtlasTexture.new()
+			sit_atlas.atlas = crowned_tex
+			sit_atlas.region = Rect2(c * 64, 16 * 64, 64, 64)
+			new_frames.add_frame(&"sit_throne", sit_atlas, 1.0)
+	
+	player_animation.sprite_frames = new_frames
+	player_animation.play(cur_anim)
+	player_animation.frame = cur_frame
 
 func _create_death_fade_overlay() -> ColorRect:
 	var canvas = CanvasLayer.new()
