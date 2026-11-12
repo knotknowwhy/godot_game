@@ -6,10 +6,8 @@ extends CharacterBody2D
 @onready var max_block_time: Timer = $max_block_time
 @onready var health_bar = $hud/margin/hbox/player_health_bar
 @onready var damage_vignette: ColorRect = $hud/damage_vignette
-@onready var blood_soak: ColorRect = get_node_or_null("hud/blood_soak")
 @onready var death_fade_rect: ColorRect = get_node_or_null("death_fade_layer/death_fade_rect")
 var vignette_tween: Tween = null
-var blood_soak_tween: Tween = null
 
 const SPEED = 100.0
 const DODGE_SPEED: float = 220.0
@@ -535,31 +533,13 @@ func _die() -> void:
 	if hud_hint:
 		hud_tween.tween_property(hud_hint, "modulate:a", 0.0, 0.35)
 	
-	# 1. Screen Blood Soak & Camera Dramatic Zoom-In
-	if not blood_soak or not is_instance_valid(blood_soak):
-		blood_soak = _get_or_create_blood_soak_rect()
-	
-	if blood_soak and blood_soak.material:
-		var soak_mat = blood_soak.material as ShaderMaterial
-		if soak_mat:
-			if blood_soak_tween and blood_soak_tween.is_running():
-				blood_soak_tween.kill()
-			blood_soak_tween = create_tween()
-			# Initial splatter impact on lethal strike
-			blood_soak_tween.tween_method(func(val: float):
-				soak_mat.set_shader_parameter("blood_progress", val)
-			, 0.0, 0.35, 0.22).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
-			# Continual seeping, dripping and soaking across the viewport
-			blood_soak_tween.chain().tween_method(func(val: float):
-				soak_mat.set_shader_parameter("blood_progress", val)
-			, 0.35, 0.96, 1.4).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN_OUT)
-
+	# 1. Camera Dramatic Zoom-In on the fallen knight
 	if not camera:
 		camera = get_node_or_null("Camera2D")
 	if camera:
 		var cam_tween = create_tween()
 		cam_tween.set_parallel(true)
-		cam_tween.tween_property(camera, "zoom", Vector2(7.8, 7.8), 1.4)\
+		cam_tween.tween_property(camera, "zoom", Vector2(7.8, 7.8), 2.8)\
 			.set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
 	
 	# 2. Fatal Impact & Slash FX
@@ -637,15 +617,17 @@ func _die() -> void:
 	death_fade_rect.visible = true
 	
 	var transition_tween = create_tween()
-	transition_tween.tween_interval(1.4)
+	# Hold for 3.5 seconds to watch the fallen knight and the growing blood puddle
+	transition_tween.tween_interval(3.5)
 	transition_tween.tween_property(death_fade_rect, "color:a", 1.0, 0.75)\
 		.set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN)
 	transition_tween.tween_interval(0.12)
 	transition_tween.tween_callback(func():
-		if ResourceLoader.exists("res://scenes/u_dead.tscn"):
-			get_tree().change_scene_to_file.call_deferred("res://scenes/u_dead.tscn")
-		else:
-			get_tree().reload_current_scene.call_deferred()
+		if is_inside_tree():
+			if ResourceLoader.exists("res://scenes/u_dead.tscn"):
+				get_tree().change_scene_to_file.call_deferred("res://scenes/u_dead.tscn")
+			else:
+				get_tree().reload_current_scene.call_deferred()
 	)
 
 func _spawn_death_slash_fx() -> void:
@@ -703,7 +685,10 @@ func _spawn_blood_spray_particles() -> void:
 	particles.color = Color(0.78, 0.08, 0.12, 0.95)
 	add_child(particles)
 	particles.emitting = true
-	get_tree().create_timer(0.9).timeout.connect(particles.queue_free)
+	if is_inside_tree():
+		get_tree().create_timer(0.9).timeout.connect(particles.queue_free)
+	else:
+		particles.queue_free()
 
 func _spawn_dust_impact_particles() -> void:
 	var particles = CPUParticles2D.new()
@@ -723,7 +708,10 @@ func _spawn_dust_impact_particles() -> void:
 	particles.color = Color(0.65, 0.62, 0.58, 0.55)
 	add_child(particles)
 	particles.emitting = true
-	get_tree().create_timer(0.8).timeout.connect(particles.queue_free)
+	if is_inside_tree():
+		get_tree().create_timer(0.8).timeout.connect(particles.queue_free)
+	else:
+		particles.queue_free()
 
 func _spawn_dropped_sword(fall_dir_sign: float) -> void:
 	var sword_tex = load("res://assets/sprites/dropped_sword.png")
@@ -752,30 +740,6 @@ func _spawn_blood_pool() -> void:
 	puddle.z_index = -1
 	puddle.position = (player_animation.position if player_animation else Vector2.ZERO) + Vector2(0, 6)
 	add_child(puddle)
-
-func _get_or_create_blood_soak_rect() -> ColorRect:
-	var rect = get_node_or_null("hud/blood_soak") as ColorRect
-	if rect:
-		return rect
-	var hud_node = get_node_or_null("hud")
-	if not hud_node:
-		var canvas = CanvasLayer.new()
-		canvas.name = "blood_soak_layer"
-		canvas.layer = 95
-		add_child(canvas)
-		hud_node = canvas
-	rect = ColorRect.new()
-	rect.name = "blood_soak"
-	rect.set_anchors_preset(Control.PRESET_FULL_RECT)
-	rect.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	var shader = load("res://shaders/screen_blood_soak.gdshader")
-	if shader:
-		var mat = ShaderMaterial.new()
-		mat.shader = shader
-		mat.set_shader_parameter("blood_progress", 0.0)
-		rect.material = mat
-	hud_node.add_child(rect)
-	return rect
 
 func _create_death_fade_overlay() -> ColorRect:
 	var canvas = CanvasLayer.new()

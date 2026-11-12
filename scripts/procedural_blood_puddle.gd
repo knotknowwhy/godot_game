@@ -2,8 +2,8 @@ extends Node2D
 
 # Procedural Blood Puddle that organically pools and expands across dungeon tiles.
 
-@export var max_radius: float = 26.0
-@export var growth_duration: float = 2.2
+@export var max_radius: float = 30.0
+@export var growth_duration: float = 3.5
 @export var segments: int = 64
 
 var current_progress: float = 0.0 # 0.0 to 1.0

@@ -1,11 +1,10 @@
-[gd_scene load_steps=103 format=3 uid="uid://casgcs7q8ujxx"]
+[gd_scene load_steps=101 format=3 uid="uid://casgcs7q8ujxx"]
 
 [ext_resource type="Texture2D" uid="uid://blxmx43ltslg4" path="res://assets/sprites/player_sheet.png" id="1_3vyb7"]
 [ext_resource type="Script" uid="uid://dxwpcmmldsgvg" path="res://scripts/player.gd" id="1_g2els"]
 [ext_resource type="Script" path="res://scripts/player_health_bar.gd" id="3_hud_bar"]
 [ext_resource type="Shader" path="res://shaders/damage_vignette.gdshader" id="4_vignette_shader"]
 [ext_resource type="PackedScene" path="res://scenes/controls_hint.tscn" id="5_controls"]
-[ext_resource type="Shader" path="res://shaders/screen_blood_soak.gdshader" id="6_blood_soak_shader"]
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_smehm"]
 atlas = ExtResource("1_3vyb7")
@@ -755,12 +754,6 @@ shader_parameter/intensity = 0.0
 shader_parameter/inner_radius = 0.35
 shader_parameter/outer_radius = 0.85
 
-[sub_resource type="ShaderMaterial" id="ShaderMaterial_blood_soak"]
-shader = ExtResource("6_blood_soak_shader")
-shader_parameter/blood_progress = 0.0
-shader_parameter/blood_color = Color(0.48, 0.03, 0.06, 0.96)
-shader_parameter/coagulated_color = Color(0.15, 0.01, 0.02, 0.98)
-
 [node name="player" type="CharacterBody2D"]
 z_index = 2
 collision_layer = 2
@@ -814,16 +807,6 @@ wait_time = 1.5
 
 [node name="damage_vignette" type="ColorRect" parent="hud"]
 material = SubResource("ShaderMaterial_vignette")
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-mouse_filter = 2
-color = Color(1, 1, 1, 1)
-
-[node name="blood_soak" type="ColorRect" parent="hud"]
-material = SubResource("ShaderMaterial_blood_soak")
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
