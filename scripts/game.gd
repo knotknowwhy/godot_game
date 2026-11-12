@@ -15,6 +15,8 @@ const MENU_PLAYER_POS = Vector2(10, 157)
 const ROOM1_PLAYER_POS = Vector2(10, 36)
 const MENU_CAMERA_ZOOM = Vector2(6.8, 6.8)
 const GAME_CAMERA_ZOOM = Vector2(4.98, 4.98)
+const MENU_LOGO_TEX = preload("res://assets/sprites/menu_logo.png")
+const MENU_FONT = preload("res://assets/fonts/PressStart2P-Regular.ttf")
 
 func _ready() -> void:
 	if player:
@@ -38,7 +40,87 @@ func _ready() -> void:
 	if settings_button and not settings_button.pressed.is_connected(_on_settings_pressed):
 		settings_button.pressed.connect(_on_settings_pressed)
 	
+	_setup_minecraft_menu()
 	_play_scene_fade_in()
+
+func _setup_minecraft_menu() -> void:
+	if not menu_hud:
+		return
+	var ui_root: Control = menu_hud.get_node_or_null("center")
+	if not ui_root:
+		return
+	
+	# Big Minecraft-style 3D stone-block TŘEBEŠÍN KNIGHT banner centered at top (6x integer pixel scale)
+	var logo_rect := TextureRect.new()
+	logo_rect.name = "trebesin_logo"
+	logo_rect.texture = MENU_LOGO_TEX
+	logo_rect.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+	logo_rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	logo_rect.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	logo_rect.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	var logo_size := Vector2(756.0, 324.0)
+	logo_rect.position = Vector2(957.0 - logo_size.x * 0.5, 44.0)
+	logo_rect.size = logo_size
+	ui_root.add_child(logo_rect)
+	
+	# Classic tilted pulsing yellow Minecraft splash text with Czech diacritics
+	var splash := Label.new()
+	splash.name = "splash_label"
+	splash.text = "Třebešín Edition!"
+	splash.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	splash.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	splash.add_theme_font_override("font", MENU_FONT)
+	splash.add_theme_font_size_override("font_size", 18)
+	splash.add_theme_color_override("font_color", Color(1.0, 1.0, 0.25, 1.0))
+	splash.add_theme_color_override("font_shadow_color", Color(0.18, 0.14, 0.0, 1.0))
+	splash.add_theme_constant_override("shadow_offset_x", 3)
+	splash.add_theme_constant_override("shadow_offset_y", 3)
+	splash.add_theme_color_override("font_outline_color", Color(0.06, 0.05, 0.02, 1.0))
+	splash.add_theme_constant_override("outline_size", 5)
+	splash.size = Vector2(360.0, 32.0)
+	splash.pivot_offset = splash.size * 0.5
+	splash.position = Vector2(957.0 + 170.0, 226.0)
+	splash.rotation = -0.26
+	ui_root.add_child(splash)
+	
+	var splash_tw := create_tween().set_loops()
+	splash_tw.tween_property(splash, "scale", Vector2(1.07, 1.07), 0.36).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+	splash_tw.tween_property(splash, "scale", Vector2(0.96, 0.96), 0.36).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+	
+	# Style menu buttons like classic Minecraft stone menu bars
+	var vbox: VBoxContainer = ui_root.get_node_or_null("vbox")
+	if vbox:
+		vbox.position = Vector2(957.0 - 170.0, 692.0)
+		vbox.size = Vector2(340.0, 160.0)
+		vbox.add_theme_constant_override("separation", 18)
+	
+	for btn in [start_button, settings_button]:
+		if not btn:
+			continue
+		btn.custom_minimum_size = Vector2(340.0, 66.0)
+		btn.add_theme_font_override("font", MENU_FONT)
+		btn.add_theme_font_size_override("font_size", 20)
+		btn.add_theme_color_override("font_color", Color(0.93, 0.93, 0.95, 1.0))
+		btn.add_theme_color_override("font_hover_color", Color(1.0, 0.98, 0.7, 1.0))
+		btn.add_theme_color_override("font_pressed_color", Color(0.85, 0.85, 0.88, 1.0))
+		btn.add_theme_color_override("font_outline_color", Color(0.06, 0.06, 0.08, 1.0))
+		btn.add_theme_constant_override("outline_size", 4)
+		btn.add_theme_stylebox_override("normal", _make_stone_button_style(Color(0.32, 0.33, 0.37, 0.94), Color(0.56, 0.58, 0.64, 1.0)))
+		btn.add_theme_stylebox_override("hover", _make_stone_button_style(Color(0.38, 0.40, 0.48, 0.98), Color(0.76, 0.78, 0.84, 1.0)))
+		btn.add_theme_stylebox_override("pressed", _make_stone_button_style(Color(0.22, 0.23, 0.27, 0.98), Color(0.42, 0.44, 0.50, 1.0)))
+		btn.add_theme_stylebox_override("focus", _make_stone_button_style(Color(0.36, 0.38, 0.45, 0.96), Color(0.85, 0.78, 0.42, 1.0)))
+
+func _make_stone_button_style(bg: Color, border: Color) -> StyleBoxFlat:
+	var sb := StyleBoxFlat.new()
+	sb.bg_color = bg
+	sb.border_color = border
+	sb.set_border_width_all(3)
+	sb.border_width_bottom = 5
+	sb.set_corner_radius_all(2)
+	sb.shadow_color = Color(0.03, 0.03, 0.05, 0.85)
+	sb.shadow_size = 0
+	sb.shadow_offset = Vector2(0, 3)
+	return sb
 
 func _play_scene_fade_in() -> void:
 	var fade_layer := CanvasLayer.new()
