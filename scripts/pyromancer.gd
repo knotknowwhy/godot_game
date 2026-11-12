@@ -59,10 +59,16 @@ func _ready() -> void:
 	_find_player_target()
 
 func _find_player_target() -> void:
-	if not player_target or not is_instance_valid(player_target):
-		var p = get_tree().get_first_node_in_group("player")
-		if p:
-			player_target = p
+	if player_target and is_instance_valid(player_target):
+		if player_target.get("is_dead"):
+			player_target = null
+			current_state = State.IDLE
+			velocity = Vector2.ZERO
+		return
+	
+	var p = get_tree().get_first_node_in_group("player")
+	if p and is_instance_valid(p) and not p.get("is_dead"):
+		player_target = p
 
 func _get_separation_vector() -> Vector2:
 	var push = Vector2.ZERO

@@ -253,6 +253,11 @@ func _physics_process(delta: float) -> void:
 	if is_dead:
 		return
 	
+	if player_target and is_instance_valid(player_target) and player_target.get("is_dead"):
+		player_target = null
+		current_state = State.IDLE
+		velocity = Vector2.ZERO
+	
 	_check_room_and_proximity()
 	var my_center = _get_body_center()
 	

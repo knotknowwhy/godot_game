@@ -58,6 +58,7 @@ var dodge_buffered: bool = false
 var facing_direction: Vector2 = Vector2.DOWN
 var dodge_direction: Vector2 = Vector2.DOWN
 var block_start_time: float = 0.0
+var last_attacker: Node2D = null
 @onready var camera: Camera2D = get_node_or_null("Camera2D")
 
 func _ready() -> void:
@@ -316,6 +317,8 @@ func take_damage(amount: int, attacker: Node2D = null) -> void:
 	if is_dead or is_invulnerable:
 		return
 	
+	last_attacker = attacker
+	
 	if isBlocking:
 		var elapsed = (Time.get_ticks_msec() / 1000.0) - block_start_time
 		if elapsed <= PARRY_WINDOW and attacker != null and attacker.has_method("stagger"):
@@ -487,19 +490,125 @@ func _flash_red(duration: float = 1.0) -> void:
 	)
 
 func _die() -> void:
+	if is_dead:
+		return
 	is_dead = true
-	invulnerability_timer = 0.0
-	is_invulnerable = false
+	is_controllable = false
+	invulnerability_timer = 999.0
+	is_invulnerable = true
 	velocity = Vector2.ZERO
-	if damage_tween:
+	if damage_tween and damage_tween.is_running():
 		damage_tween.kill()
+	if vignette_tween and vignette_tween.is_running():
+		vignette_tween.kill()
 	
+	# Disengage from enemy targeting
+	remove_from_group("player")
+	
+	# Disable hitboxes & collisions so enemies cannot shove or hit the corpse
+	set_collision_layer_value(1, false)
+	var col_shape = get_node_or_null("player")
+	if col_shape:
+		col_shape.set_deferred("disabled", true)
+	var hit_area = get_node_or_null("hit_area_player")
+	if hit_area:
+		hit_area.set_deferred("monitoring", false)
+		hit_area.set_deferred("monitorable", false)
+	var atk_area = get_node_or_null("attack_area_player")
+	if atk_area:
+		atk_area.set_deferred("monitoring", false)
+		atk_area.set_deferred("monitorable", false)
+	var blk_area = get_node_or_null("block_area_player")
+	if blk_area:
+		blk_area.set_deferred("monitoring", false)
+		blk_area.set_deferred("monitorable", false)
+	
+	# Smoothly fade out HUD elements (health bar and controls tip)
+	var hud_margin = get_node_or_null("hud/margin")
+	var hud_hint = get_node_or_null("hud/controls_hint")
+	var hud_tween = create_tween()
+	hud_tween.set_parallel(true)
+	if hud_margin:
+		hud_tween.tween_property(hud_margin, "modulate:a", 0.0, 0.35)
+	if hud_hint:
+		hud_tween.tween_property(hud_hint, "modulate:a", 0.0, 0.35)
+	
+	# 1. Camera Dramatic Zoom-In
+	if not camera:
+		camera = get_node_or_null("Camera2D")
+	if camera:
+		var cam_tween = create_tween()
+		cam_tween.set_parallel(true)
+		cam_tween.tween_property(camera, "zoom", Vector2(7.8, 7.8), 1.4)\
+			.set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
+	
+	# 2. Fatal Impact & Slash FX
+	shake_camera(6.5, 0.35)
+	if not player_animation:
+		player_animation = get_node_or_null("player_animation")
+	_spawn_death_slash_fx()
+	_spawn_blood_spray_particles()
+	
+	# 3. Collapse & Falling to Floor
+	var stumble_dir: Vector2 = -facing_direction.normalized()
+	if last_attacker and is_instance_valid(last_attacker):
+		stumble_dir = (global_position - last_attacker.global_position).normalized()
+	if stumble_dir == Vector2.ZERO:
+		stumble_dir = Vector2.UP
+	
+	var fall_dir_sign: float = -1.0
+	if stumble_dir.x < -0.2 or facing_direction.x < -0.2:
+		fall_dir_sign = 1.0 # Fall toward left (+90 deg)
+	else:
+		fall_dir_sign = -1.0 # Fall toward right (-90 deg, matches u_dead.tscn)
+	var target_rot = fall_dir_sign * (PI * 0.5)
+	
+	if player_animation:
+		player_animation.stop()
+		if abs(facing_direction.x) > 0.3:
+			player_animation.play("idle_right" if facing_direction.x > 0 else "idle_left")
+		else:
+			player_animation.play("idle_down")
+		# Red flash on lethal impact
+		player_animation.modulate = Color(2.4, 0.35, 0.35, 1.0)
+	
+	# Animate stumble, then collapse onto floor
+	var fall_tween = create_tween()
+	# Step A: Recoil stumble (0.12s)
+	fall_tween.tween_property(self, "position", position + stumble_dir * 5.0, 0.12)\
+		.set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+	
+	# Step B: Collapse & tilt 90 degrees onto side (0.46s)
+	fall_tween.chain().tween_property(player_animation, "rotation", target_rot, 0.46)\
+		.set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
+	fall_tween.parallel().tween_property(player_animation, "position:y", 7.0, 0.46)\
+		.set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
+	fall_tween.parallel().tween_property(player_animation, "modulate", Color(0.85, 0.76, 0.76, 1.0), 0.46)
+	
+	# Step C: Impact with stone floor (thud, dust, dropped sword, blood pool)
+	fall_tween.chain().tween_callback(func():
+		shake_camera(3.2, 0.18)
+		_spawn_dust_impact_particles()
+		_spawn_dropped_sword(fall_dir_sign)
+		_spawn_blood_pool()
+	)
+	
+	# Step D: Armor impact bounce (squash & stretch)
+	fall_tween.chain().tween_property(player_animation, "scale", Vector2(1.14, 0.86), 0.08)
+	fall_tween.chain().tween_property(player_animation, "scale", Vector2(1.0, 1.0), 0.12)
+	
+	# 4. Cinematic Vignette Intensify
 	if damage_vignette and damage_vignette.material:
 		var mat = damage_vignette.material as ShaderMaterial
 		if mat:
-			mat.set_shader_parameter("intensity", 1.0)
+			var vig_tween = create_tween()
+			vig_tween.tween_method(func(val: float):
+				mat.set_shader_parameter("intensity", val)
+			, 0.4, 0.95, 1.0).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
 	
-	player_animation.modulate = Color(1.0, 0.25, 0.25)
+	# 5. Transition to Death Screen
+	if not player_animation:
+		player_animation = get_node_or_null("player_animation")
 	
 	if not death_fade_rect or not is_instance_valid(death_fade_rect):
 		death_fade_rect = _create_death_fade_overlay()
@@ -507,21 +616,131 @@ func _die() -> void:
 	death_fade_rect.color = Color(0, 0, 0, 0)
 	death_fade_rect.visible = true
 	
-	var death_tween = create_tween()
-	death_tween.set_parallel(true)
-	# Fade player character sprite
-	death_tween.tween_property(player_animation, "modulate:a", 0.0, 0.65)
-	# Smoothly fade the entire screen to black
-	death_tween.tween_property(death_fade_rect, "color:a", 1.0, 0.85).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN)
-	
-	# Once fully faded to black, hold briefly then load the death scene
-	death_tween.chain().tween_interval(0.12)
-	death_tween.chain().tween_callback(func():
+	var transition_tween = create_tween()
+	transition_tween.tween_interval(1.4)
+	transition_tween.tween_property(death_fade_rect, "color:a", 1.0, 0.75)\
+		.set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN)
+	transition_tween.tween_interval(0.12)
+	transition_tween.tween_callback(func():
 		if ResourceLoader.exists("res://scenes/u_dead.tscn"):
 			get_tree().change_scene_to_file.call_deferred("res://scenes/u_dead.tscn")
 		else:
 			get_tree().reload_current_scene.call_deferred()
 	)
+
+func _spawn_death_slash_fx() -> void:
+	var slash_root = Node2D.new()
+	slash_root.z_index = 5
+	slash_root.position = player_animation.position if player_animation else Vector2.ZERO
+	add_child(slash_root)
+	
+	var line = Line2D.new()
+	line.width = 3.0
+	line.default_color = Color(1.0, 1.0, 1.0, 1.0)
+	line.begin_cap_mode = Line2D.LINE_CAP_ROUND
+	line.end_cap_mode = Line2D.LINE_CAP_ROUND
+	
+	var p1 = Vector2(-16, -10)
+	var p2 = Vector2(16, 10)
+	if facing_direction.x < 0:
+		p1 = Vector2(16, -10)
+		p2 = Vector2(-16, 10)
+	line.add_point(p1)
+	line.add_point(p2)
+	slash_root.add_child(line)
+	
+	var aura = Line2D.new()
+	aura.width = 6.0
+	aura.default_color = Color(1.0, 0.15, 0.2, 0.85)
+	aura.begin_cap_mode = Line2D.LINE_CAP_ROUND
+	aura.end_cap_mode = Line2D.LINE_CAP_ROUND
+	aura.add_point(p1)
+	aura.add_point(p2)
+	slash_root.add_child(aura)
+	
+	var tw = create_tween()
+	tw.set_parallel(true)
+	tw.tween_property(line, "width", 0.0, 0.2).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+	tw.tween_property(aura, "width", 0.0, 0.2).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+	tw.tween_property(slash_root, "modulate:a", 0.0, 0.2)
+	tw.chain().tween_callback(slash_root.queue_free)
+
+func _spawn_blood_spray_particles() -> void:
+	var particles = CPUParticles2D.new()
+	particles.amount = 24
+	particles.lifetime = 0.55
+	particles.one_shot = true
+	particles.explosiveness = 0.95
+	particles.z_index = 4
+	var spray_dir = -facing_direction.normalized() + Vector2(0, -0.35)
+	particles.direction = spray_dir.normalized()
+	particles.spread = 50.0
+	particles.gravity = Vector2(0, 200)
+	particles.initial_velocity_min = 45.0
+	particles.initial_velocity_max = 85.0
+	particles.scale_amount_min = 1.5
+	particles.scale_amount_max = 3.2
+	particles.color = Color(0.78, 0.08, 0.12, 0.95)
+	add_child(particles)
+	particles.emitting = true
+	get_tree().create_timer(0.9).timeout.connect(particles.queue_free)
+
+func _spawn_dust_impact_particles() -> void:
+	var particles = CPUParticles2D.new()
+	particles.amount = 14
+	particles.lifetime = 0.38
+	particles.one_shot = true
+	particles.explosiveness = 0.9
+	particles.z_index = 3
+	particles.position = (player_animation.position if player_animation else Vector2.ZERO) + Vector2(0, 6)
+	particles.direction = Vector2(0, -1)
+	particles.spread = 85.0
+	particles.gravity = Vector2(0, 35)
+	particles.initial_velocity_min = 15.0
+	particles.initial_velocity_max = 35.0
+	particles.scale_amount_min = 1.2
+	particles.scale_amount_max = 2.4
+	particles.color = Color(0.65, 0.62, 0.58, 0.55)
+	add_child(particles)
+	particles.emitting = true
+	get_tree().create_timer(0.8).timeout.connect(particles.queue_free)
+
+func _spawn_dropped_sword(fall_dir_sign: float) -> void:
+	var sword_tex = load("res://assets/sprites/dropped_sword.png")
+	if not sword_tex:
+		return
+	var sword = Sprite2D.new()
+	sword.texture = sword_tex
+	sword.z_index = z_index
+	sword.position = (player_animation.position if player_animation else Vector2.ZERO) + Vector2(randf_range(-3, 3), 4)
+	sword.rotation = randf_range(-0.4, 0.4)
+	add_child(sword)
+	
+	var toss_offset = Vector2(-fall_dir_sign * randf_range(11.0, 16.0), randf_range(-3.0, 2.0))
+	var sw_tween = create_tween()
+	sw_tween.set_parallel(true)
+	sw_tween.tween_property(sword, "position", sword.position + toss_offset, 0.28)\
+		.set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+	sw_tween.tween_property(sword, "rotation", sword.rotation + fall_dir_sign * randf_range(1.4, 2.2), 0.28)
+
+func _spawn_blood_pool() -> void:
+	var blood_tex = load("res://assets/sprites/blood_00.png")
+	if not blood_tex:
+		return
+	var blood = Sprite2D.new()
+	blood.texture = blood_tex
+	blood.z_index = -1
+	blood.position = (player_animation.position if player_animation else Vector2.ZERO) + Vector2(0, 6)
+	blood.scale = Vector2(0.02, 0.02)
+	blood.rotation = randf_range(0.0, TAU)
+	blood.modulate = Color(0.65, 0.05, 0.08, 0.0)
+	add_child(blood)
+	
+	var bl_tween = create_tween()
+	bl_tween.set_parallel(true)
+	bl_tween.tween_property(blood, "scale", Vector2(0.34, 0.34), 0.85)\
+		.set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
+	bl_tween.tween_property(blood, "modulate:a", 0.92, 0.45)
 
 func _create_death_fade_overlay() -> ColorRect:
 	var canvas = CanvasLayer.new()
