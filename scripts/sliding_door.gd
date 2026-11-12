@@ -14,6 +14,7 @@ signal door_closed
 @export var open_on_proximity: bool = false
 @export var proximity_radius: float = 38.0
 @export var is_locked: bool = false
+@export var allow_open_from_south: bool = true
 @export var mist_nodes: Array[NodePath] = []
 
 var tween: Tween = null
@@ -108,20 +109,22 @@ func _physics_process(delta: float) -> void:
 		if player and is_instance_valid(player):
 			_fade_mat.set_shader_parameter("player_pos", player.global_position)
 	
+	var p = get_tree().get_first_node_in_group("player")
+	var door_center = global_position + (collision_shape.position if collision_shape else Vector2.ZERO)
+	var blocked_south: bool = (not allow_open_from_south) and p and is_instance_valid(p) and p.global_position.y >= door_center.y - 4.0
+
 	# Subtle golden invitation shimmer when a proximity gate is unlocked and ready to open
-	if open_on_proximity and not is_locked and door_sprite and _inside_bodies.is_empty():
+	if open_on_proximity and not is_locked and not blocked_south and door_sprite and _inside_bodies.is_empty():
 		pulse_timer += delta * 4.0
 		var g = 1.0 + (sin(pulse_timer) * 0.5 + 0.5) * 0.35
 		door_sprite.modulate = Color(g * 1.1, g * 1.05, 1.0)
 	elif door_sprite and _inside_bodies.is_empty():
 		door_sprite.modulate = Color.WHITE
 	
-	if not open_on_proximity or is_locked:
+	if not open_on_proximity or is_locked or blocked_south:
 		return
 	
-	var p = get_tree().get_first_node_in_group("player")
 	if p and is_instance_valid(p):
-		var door_center = global_position + (collision_shape.position if collision_shape else Vector2.ZERO)
 		if door_center.distance_to(p.global_position) <= proximity_radius:
 			open_door()
 

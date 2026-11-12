@@ -530,6 +530,7 @@ mist_nodes = Array[NodePath]([NodePath("../darkness_mists/mist_room3")])
 position = Vector2(472, -272)
 open_on_proximity = true
 is_locked = true
+allow_open_from_south = false
 mist_nodes = Array[NodePath]([NodePath("../darkness_mists/mist_boss_room")])
 
 [node name="hallway1_west_door" parent="." unique_id=1841878671 instance=ExtResource("8_side_door")]

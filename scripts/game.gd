@@ -37,6 +37,22 @@ func _ready() -> void:
 		start_button.pressed.connect(_on_start_game_pressed)
 	if settings_button and not settings_button.pressed.is_connected(_on_settings_pressed):
 		settings_button.pressed.connect(_on_settings_pressed)
+	
+	_play_scene_fade_in()
+
+func _play_scene_fade_in() -> void:
+	var fade_layer := CanvasLayer.new()
+	fade_layer.layer = 100
+	var fade_rect := ColorRect.new()
+	fade_rect.color = Color(0, 0, 0, 1)
+	fade_rect.set_anchors_preset(Control.PRESET_FULL_RECT)
+	fade_rect.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	fade_layer.add_child(fade_rect)
+	add_child(fade_layer)
+	
+	var tw = create_tween()
+	tw.tween_property(fade_rect, "color:a", 0.0, 0.4).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
+	tw.tween_callback(fade_layer.queue_free)
 
 func _on_settings_pressed() -> void:
 	get_tree().change_scene_to_file("res://scenes/settings.tscn")

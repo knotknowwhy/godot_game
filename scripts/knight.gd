@@ -293,7 +293,7 @@ func _lock_arena_doors(lock: bool) -> void:
 	for door_name in ["room4_south_door", "hallway1_east_door"]:
 		var d = scene_root.get_node_or_null(door_name)
 		if d and is_instance_valid(d):
-			if lock:
+			if lock or door_name == "room4_south_door":
 				if d.has_method("lock_and_close"):
 					d.lock_and_close()
 			else:
@@ -2024,8 +2024,32 @@ func _show_coronation_banner(p: Node2D) -> void:
 	if font:
 		btn.add_theme_font_override("font", font)
 	btn.add_theme_font_size_override("font_size", 10)
+	var is_reloading := false
 	btn.pressed.connect(func():
-		get_tree().change_scene_to_file("res://scenes/game.tscn")
+		if is_reloading:
+			return
+		is_reloading = true
+		btn.disabled = true
+		
+		var fade_layer := CanvasLayer.new()
+		fade_layer.layer = 100
+		var fade_rect := ColorRect.new()
+		fade_rect.color = Color(0, 0, 0, 0)
+		fade_rect.set_anchors_preset(Control.PRESET_FULL_RECT)
+		fade_rect.mouse_filter = Control.MOUSE_FILTER_STOP
+		fade_layer.add_child(fade_rect)
+		if is_instance_valid(p):
+			p.add_child(fade_layer)
+		else:
+			get_tree().root.add_child(fade_layer)
+		
+		var fade_tw = create_tween()
+		fade_tw.parallel().tween_property(fade_rect, "color:a", 1.0, 0.5).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN)
+		if is_instance_valid(root):
+			fade_tw.parallel().tween_property(root, "modulate:a", 0.0, 0.35).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
+		fade_tw.tween_callback(func():
+			get_tree().change_scene_to_file("res://scenes/game.tscn")
+		)
 	)
 	root.add_child(btn)
 	
