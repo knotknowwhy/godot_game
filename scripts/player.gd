@@ -6,8 +6,10 @@ extends CharacterBody2D
 @onready var max_block_time: Timer = $max_block_time
 @onready var health_bar = $hud/margin/hbox/player_health_bar
 @onready var damage_vignette: ColorRect = $hud/damage_vignette
+@onready var blood_soak: ColorRect = get_node_or_null("hud/blood_soak")
 @onready var death_fade_rect: ColorRect = get_node_or_null("death_fade_layer/death_fade_rect")
 var vignette_tween: Tween = null
+var blood_soak_tween: Tween = null
 
 const SPEED = 100.0
 const DODGE_SPEED: float = 220.0
@@ -533,7 +535,25 @@ func _die() -> void:
 	if hud_hint:
 		hud_tween.tween_property(hud_hint, "modulate:a", 0.0, 0.35)
 	
-	# 1. Camera Dramatic Zoom-In
+	# 1. Screen Blood Soak & Camera Dramatic Zoom-In
+	if not blood_soak or not is_instance_valid(blood_soak):
+		blood_soak = _get_or_create_blood_soak_rect()
+	
+	if blood_soak and blood_soak.material:
+		var soak_mat = blood_soak.material as ShaderMaterial
+		if soak_mat:
+			if blood_soak_tween and blood_soak_tween.is_running():
+				blood_soak_tween.kill()
+			blood_soak_tween = create_tween()
+			# Initial splatter impact on lethal strike
+			blood_soak_tween.tween_method(func(val: float):
+				soak_mat.set_shader_parameter("blood_progress", val)
+			, 0.0, 0.35, 0.22).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+			# Continual seeping, dripping and soaking across the viewport
+			blood_soak_tween.chain().tween_method(func(val: float):
+				soak_mat.set_shader_parameter("blood_progress", val)
+			, 0.35, 0.96, 1.4).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN_OUT)
+
 	if not camera:
 		camera = get_node_or_null("Camera2D")
 	if camera:
@@ -724,23 +744,38 @@ func _spawn_dropped_sword(fall_dir_sign: float) -> void:
 	sw_tween.tween_property(sword, "rotation", sword.rotation + fall_dir_sign * randf_range(1.4, 2.2), 0.28)
 
 func _spawn_blood_pool() -> void:
-	var blood_tex = load("res://assets/sprites/blood_00.png")
-	if not blood_tex:
+	var puddle_script = load("res://scripts/procedural_blood_puddle.gd")
+	if not puddle_script:
 		return
-	var blood = Sprite2D.new()
-	blood.texture = blood_tex
-	blood.z_index = -1
-	blood.position = (player_animation.position if player_animation else Vector2.ZERO) + Vector2(0, 6)
-	blood.scale = Vector2(0.02, 0.02)
-	blood.rotation = randf_range(0.0, TAU)
-	blood.modulate = Color(0.65, 0.05, 0.08, 0.0)
-	add_child(blood)
-	
-	var bl_tween = create_tween()
-	bl_tween.set_parallel(true)
-	bl_tween.tween_property(blood, "scale", Vector2(0.34, 0.34), 0.85)\
-		.set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
-	bl_tween.tween_property(blood, "modulate:a", 0.92, 0.45)
+	var puddle = Node2D.new()
+	puddle.set_script(puddle_script)
+	puddle.z_index = -1
+	puddle.position = (player_animation.position if player_animation else Vector2.ZERO) + Vector2(0, 6)
+	add_child(puddle)
+
+func _get_or_create_blood_soak_rect() -> ColorRect:
+	var rect = get_node_or_null("hud/blood_soak") as ColorRect
+	if rect:
+		return rect
+	var hud_node = get_node_or_null("hud")
+	if not hud_node:
+		var canvas = CanvasLayer.new()
+		canvas.name = "blood_soak_layer"
+		canvas.layer = 95
+		add_child(canvas)
+		hud_node = canvas
+	rect = ColorRect.new()
+	rect.name = "blood_soak"
+	rect.set_anchors_preset(Control.PRESET_FULL_RECT)
+	rect.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	var shader = load("res://shaders/screen_blood_soak.gdshader")
+	if shader:
+		var mat = ShaderMaterial.new()
+		mat.shader = shader
+		mat.set_shader_parameter("blood_progress", 0.0)
+		rect.material = mat
+	hud_node.add_child(rect)
+	return rect
 
 func _create_death_fade_overlay() -> ColorRect:
 	var canvas = CanvasLayer.new()
