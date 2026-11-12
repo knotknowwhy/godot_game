@@ -51,8 +51,8 @@ enum State {
 @onready var boss_name_label: Label = get_node_or_null("boss_hud/top_center_container/boss_name_label")
 @onready var boss_health_bar = get_node_or_null("boss_hud/top_center_container/boss_health_bar")
 
-const BASE_SPEED: float = 52.0
-const PHASE2_SPEED: float = 68.0
+const BASE_SPEED: float = 32.0
+const PHASE2_SPEED: float = 42.0
 const BODY_CENTER_OFFSET: Vector2 = Vector2(0.0, 28.0)
 
 const PICKUP_SCENE = preload("res://scenes/pickup.tscn")
@@ -68,12 +68,12 @@ const FLOATING_TEXT_SCENE = preload("res://scenes/floating_text.tscn")
 
 @export var max_health: int = 750
 @export var damage_per_hit: int = 35
-@export var attack_damage: int = 18
-@export var attack_range: float = 74.0
-@export var strike_reach: float = 86.0
-@export var min_attack_cooldown: float = 0.85
-@export var max_attack_cooldown: float = 1.25
-@export var post_hit_cooldown: float = 0.55
+@export var attack_damage: int = 16
+@export var attack_range: float = 64.0
+@export var strike_reach: float = 72.0
+@export var min_attack_cooldown: float = 1.80
+@export var max_attack_cooldown: float = 2.40
+@export var post_hit_cooldown: float = 0.90
 
 var facing_direction: Vector2 = Vector2.DOWN
 var attack_direction: Vector2 = Vector2.DOWN
@@ -395,7 +395,7 @@ func _on_stand_up_finished() -> void:
 		return
 	current_state = State.IDLE
 	_update_idle_animation()
-	get_tree().create_timer(0.35).timeout.connect(func():
+	get_tree().create_timer(0.85).timeout.connect(func():
 		if is_instance_valid(self) and not is_dead and current_state == State.IDLE:
 			can_attack = true
 			current_state = State.CHASE
@@ -479,12 +479,12 @@ func _physics_process(delta: float) -> void:
 				var dist = my_center.distance_to(player_target.global_position)
 				facing_direction = to_player
 				var sep = _get_separation_vector()
-				if dist < 44.0:
-					velocity = (-to_player * 28.0 + sep * 20.0)
+				if dist < 40.0:
+					velocity = (-to_player * 14.0 + sep * 12.0)
 				else:
 					var circle_sign = 1.0 if flank_offset_angle >= 0.0 else -1.0
 					var circle_dir = to_player.rotated(PI * 0.45 * circle_sign)
-					velocity = (circle_dir * 26.0 + sep * 18.0)
+					velocity = (circle_dir * 12.0 + sep * 10.0)
 			else:
 				velocity = velocity.move_toward(Vector2.ZERO, move_speed)
 			_update_animation_by_velocity()
@@ -633,7 +633,7 @@ func _update_active_hazards(delta: float) -> void:
 				active_fissures.remove_at(i)
 
 func _update_animation_by_velocity() -> void:
-	animation.speed_scale = 1.0
+	animation.speed_scale = 0.72
 	if velocity.length() > 6.0:
 		if abs(facing_direction.x) > abs(facing_direction.y):
 			animation.flip_h = facing_direction.x < 0
@@ -648,7 +648,7 @@ func _update_animation_by_velocity() -> void:
 		_update_idle_animation()
 
 func _update_idle_animation() -> void:
-	animation.speed_scale = 1.0
+	animation.speed_scale = 0.85
 	if abs(facing_direction.x) > abs(facing_direction.y):
 		animation.flip_h = facing_direction.x < 0
 		animation.play("idle_side")
@@ -685,7 +685,7 @@ func _pose_attack_windup(dir: Vector2, windup_frame: int = 1) -> void:
 	animation.pause()
 	animation.frame = windup_frame
 
-func _play_attack_release(dir: Vector2, start_frame: int = 2, playback_speed: float = 1.55) -> void:
+func _play_attack_release(dir: Vector2, start_frame: int = 2, playback_speed: float = 1.15) -> void:
 	var anim_name = _get_attack_anim_name(dir)
 	animation.play(anim_name)
 	animation.frame = start_frame
@@ -708,29 +708,29 @@ func _try_decide_move(dist: float) -> bool:
 	if not can_attack or is_dead:
 		return false
 	
-	# 1. Tactical Riposte Backstep when player spams 3+ melee hits on the boss
-	if consecutive_hits_taken >= 3:
+	# 1. Tactical Riposte Backstep when player spams 4+ melee hits on the boss
+	if consecutive_hits_taken >= 4:
 		consecutive_hits_taken = 0
 		_start_backstep()
 		return true
 	
-	# 2. Close Range (dist <= 68px): Slash Combo, Earthshaker AoE, or Tactical Backstep
-	if dist <= 68.0:
+	# 2. Close Range (dist <= 64px): Slash Combo, Earthshaker AoE, or Tactical Backstep
+	if dist <= 64.0:
 		var roll = randf()
 		if dist < 44.0 and roll < 0.38 and last_attack_type != "slam":
 			_start_ground_slam()
 			return true
-		elif roll < 0.72 and last_attack_type != "slash":
+		elif roll < 0.76 and last_attack_type != "slash":
 			_start_slash_combo()
 			return true
-		elif roll < 0.88 and last_attack_type != "slam":
+		elif roll < 0.90 and last_attack_type != "slam":
 			_start_ground_slam()
 			return true
 		else:
 			_start_backstep()
 			return true
 	
-	# 3. Mid to Long Range (68px < dist <= 185px): Impaling Line Lunge or Sundering Ground Waves
+	# 3. Mid to Long Range (64px < dist <= 185px): Impaling Line Lunge or Sundering Ground Waves
 	if dist <= 185.0:
 		var roll = randf()
 		if roll < 0.52 and last_attack_type != "thrust":
@@ -739,7 +739,7 @@ func _try_decide_move(dist: float) -> bool:
 		elif roll < 0.86 and last_attack_type != "wave":
 			_start_wave_attack()
 			return true
-		elif dist <= 92.0 and last_attack_type != "slam":
+		elif dist <= 88.0 and last_attack_type != "slam":
 			_start_ground_slam()
 			return true
 	
@@ -759,20 +759,20 @@ func _start_slash_combo() -> void:
 		attack_direction = _get_body_center().direction_to(player_target.global_position)
 		facing_direction = attack_direction
 	
-	# Hold on windup frame 1 with steel-gold parryable glint and floor arc preview
+	# Hold on windup frame 1 with steel-gold parryable glint and stationary floor arc preview
 	_pose_attack_windup(attack_direction, 1)
 	animation.modulate = Color(1.35, 1.32, 1.15)
 	animation.scale = base_anim_scale * Vector2(1.06, 0.94)
 	slash_arc_dir = attack_direction
-	slash_arc_radius = 68.0
-	slash_arc_span = PI * 0.78
+	slash_arc_radius = 64.0
+	slash_arc_span = PI * 0.72
 	slash_arc_progress = 0.0
 	slash_arc_alpha = 0.0
 	
 	if attack_tween and attack_tween.is_running():
 		attack_tween.kill()
 	attack_tween = create_tween()
-	var windup_time = 0.30 if not is_phase_2 else 0.24
+	var windup_time = 0.85 if not is_phase_2 else 0.72
 	attack_tween.tween_method(func(val: float):
 		slash_arc_progress = val
 	, 0.0, 1.0, windup_time)
@@ -785,19 +785,19 @@ func _execute_slash_1() -> void:
 	has_dealt_strike_damage = false
 	slash_arc_progress = 0.0
 	slash_arc_alpha = 0.95
-	velocity = attack_direction * 90.0
+	velocity = attack_direction * 35.0
 	animation.modulate = Color.WHITE
 	animation.scale = base_anim_scale * Vector2(1.10, 0.92)
-	_play_attack_release(attack_direction, 2, 1.65)
+	_play_attack_release(attack_direction, 2, 1.10)
 	
-	_deal_cone_slash_damage(_scaled_dmg(18), 74.0, 0.25)
+	_deal_cone_slash_damage(_scaled_dmg(16), 66.0, 0.25)
 	
 	if attack_tween and attack_tween.is_running():
 		attack_tween.kill()
 	attack_tween = create_tween()
 	attack_tween.set_parallel(true)
-	attack_tween.tween_property(self, "slash_arc_alpha", 0.0, 0.20)
-	attack_tween.tween_property(animation, "scale", base_anim_scale, 0.20)
+	attack_tween.tween_property(self, "slash_arc_alpha", 0.0, 0.28)
+	attack_tween.tween_property(animation, "scale", base_anim_scale, 0.28)
 	attack_tween.chain().tween_callback(_check_slash_followup)
 
 func _check_slash_followup() -> void:
@@ -806,7 +806,7 @@ func _check_slash_followup() -> void:
 	
 	var in_range = false
 	if player_target and is_instance_valid(player_target) and is_player_in_boss_arena(player_target):
-		in_range = _get_body_center().distance_to(player_target.global_position) <= 84.0
+		in_range = _get_body_center().distance_to(player_target.global_position) <= 78.0
 	
 	if in_range:
 		current_state = State.SLASH_RECOVER_1
@@ -820,13 +820,13 @@ func _check_slash_followup() -> void:
 		if attack_tween and attack_tween.is_running():
 			attack_tween.kill()
 		attack_tween = create_tween()
-		var p_time = 0.22 if not is_phase_2 else 0.17
+		var p_time = 0.68 if not is_phase_2 else 0.58
 		attack_tween.tween_method(func(val: float):
 			slash_arc_progress = val
 		, 0.0, 1.0, p_time)
 		attack_tween.tween_callback(_execute_slash_2)
 	else:
-		_finish_attack_cycle(0.32, false)
+		_finish_attack_cycle(0.95, false)
 
 func _execute_slash_2() -> void:
 	if is_dead or current_state == State.STAGGERED:
@@ -835,20 +835,20 @@ func _execute_slash_2() -> void:
 	has_dealt_strike_damage = false
 	slash_arc_progress = 0.0
 	slash_arc_alpha = 0.95
-	velocity = attack_direction * 105.0
-	_play_attack_release(attack_direction, 2, 1.75)
+	velocity = attack_direction * 40.0
+	_play_attack_release(attack_direction, 2, 1.15)
 	
-	_deal_cone_slash_damage(_scaled_dmg(16), 76.0, 0.20)
+	_deal_cone_slash_damage(_scaled_dmg(15), 68.0, 0.20)
 	
 	if attack_tween and attack_tween.is_running():
 		attack_tween.kill()
 	attack_tween = create_tween()
-	attack_tween.tween_property(self, "slash_arc_alpha", 0.0, 0.20)
+	attack_tween.tween_property(self, "slash_arc_alpha", 0.0, 0.28)
 	attack_tween.tween_callback(func():
-		if is_phase_2 and player_target and is_instance_valid(player_target) and _get_body_center().distance_to(player_target.global_position) <= 88.0:
+		if is_phase_2 and player_target and is_instance_valid(player_target) and _get_body_center().distance_to(player_target.global_position) <= 80.0:
 			_start_whirlwind_finisher()
 		else:
-			_finish_attack_cycle(0.35, false)
+			_finish_attack_cycle(0.95, false)
 	)
 
 func _start_whirlwind_finisher() -> void:
@@ -865,7 +865,7 @@ func _start_whirlwind_finisher() -> void:
 	attack_tween = create_tween()
 	attack_tween.tween_method(func(val: float):
 		spin_telegraph_progress = val
-	, 0.0, 1.0, 0.28)
+	, 0.0, 1.0, 0.85)
 	attack_tween.tween_callback(_execute_whirlwind_finisher)
 
 func _execute_whirlwind_finisher() -> void:
@@ -873,25 +873,25 @@ func _execute_whirlwind_finisher() -> void:
 		return
 	current_state = State.SLASH_HIT_3
 	spin_telegraph_progress = 0.0
-	slash_arc_radius = 68.0
+	slash_arc_radius = 62.0
 	slash_arc_span = TAU
 	slash_arc_alpha = 1.0
-	_play_attack_release(facing_direction, 2, 2.0)
+	_play_attack_release(facing_direction, 2, 1.25)
 	_trigger_screen_shake(3.4, 0.18)
 	
 	# 360 cleave around boss
 	if player_target and is_instance_valid(player_target) and is_player_in_boss_arena(player_target):
-		if _get_body_center().distance_to(player_target.global_position) <= 68.0:
+		if _get_body_center().distance_to(player_target.global_position) <= 62.0:
 			if player_target.has_method("take_damage"):
-				player_target.take_damage(_scaled_dmg(22), self)
+				player_target.take_damage(_scaled_dmg(20), self)
 	
 	if attack_tween and attack_tween.is_running():
 		attack_tween.kill()
 	attack_tween = create_tween()
-	attack_tween.tween_property(self, "slash_arc_alpha", 0.0, 0.24)
+	attack_tween.tween_property(self, "slash_arc_alpha", 0.0, 0.32)
 	attack_tween.tween_callback(func():
 		animation.modulate = Color.WHITE
-		_finish_attack_cycle(0.45, true)
+		_finish_attack_cycle(1.25, true)
 	)
 
 # ==============================================================================
@@ -911,7 +911,7 @@ func _start_thrust_attack() -> void:
 		thrust_direction = my_center.direction_to(player_target.global_position)
 		facing_direction = thrust_direction
 	thrust_origin_world = my_center
-	thrust_length = _clamp_distance_to_walls(my_center, thrust_direction, 145.0 if not is_phase_2 else 165.0)
+	thrust_length = _clamp_distance_to_walls(my_center, thrust_direction, 138.0 if not is_phase_2 else 152.0)
 	
 	_pose_attack_windup(thrust_direction, 1)
 	animation.modulate = Color(1.9, 0.48, 0.42)
@@ -921,19 +921,20 @@ func _start_thrust_attack() -> void:
 		attack_tween.kill()
 	attack_tween = create_tween()
 	
-	var track_time = 0.32 if not is_phase_2 else 0.26
-	var lock_time = 0.17
+	# Generous 2-stage telegraph: 0.45s tracking + 0.70s stationary locked corridor (total 1.15s)
+	var track_time = 0.45 if not is_phase_2 else 0.38
+	var lock_time = 0.70 if not is_phase_2 else 0.60
 	attack_tween.tween_method(func(val: float):
-		thrust_progress = val * 0.72
+		thrust_progress = val * 0.45
 	, 0.0, 1.0, track_time)
 	attack_tween.tween_callback(func():
 		thrust_locked = true
 		thrust_origin_world = _get_body_center()
-		thrust_length = _clamp_distance_to_walls(thrust_origin_world, thrust_direction, 145.0 if not is_phase_2 else 165.0)
+		thrust_length = _clamp_distance_to_walls(thrust_origin_world, thrust_direction, 138.0 if not is_phase_2 else 152.0)
 		animation.modulate = Color(2.6, 2.2, 0.9)
 	)
 	attack_tween.tween_method(func(val: float):
-		thrust_progress = 0.72 + val * 0.28
+		thrust_progress = 0.45 + val * 0.55
 	, 0.0, 1.0, lock_time)
 	attack_tween.tween_callback(_execute_thrust_lunge)
 
@@ -949,21 +950,21 @@ func _execute_thrust_lunge() -> void:
 	
 	animation.modulate = Color.WHITE
 	animation.scale = base_anim_scale * Vector2(1.16, 0.88)
-	_play_attack_release(thrust_direction, 2, 1.8)
+	_play_attack_release(thrust_direction, 2, 1.25)
 	_spawn_thrust_dust_particles()
 	
 	var start_center = _get_body_center()
 	var safe_dist = _clamp_distance_to_walls(start_center, thrust_direction, thrust_length)
-	var lunge_duration = 0.20 if not is_phase_2 else 0.18
+	var lunge_duration = 0.36 if not is_phase_2 else 0.32
 	velocity = thrust_direction * (safe_dist / lunge_duration)
 	
-	# Phase 2 leaves a delayed searing fissure along the lunge path
+	# Phase 2 leaves a delayed searing fissure along the lunge path (0.85s delay)
 	if is_phase_2:
 		active_fissures.append({
 			"start": start_center,
 			"end": start_center + thrust_direction * safe_dist,
 			"width": THRUST_WIDTH,
-			"timer": 0.45,
+			"timer": 0.85,
 			"erupted": false,
 			"erupt_elapsed": 0.0
 		})
@@ -973,11 +974,11 @@ func _execute_thrust_lunge() -> void:
 	attack_tween = create_tween()
 	attack_tween.tween_method(func(_t: float):
 		if not has_dealt_strike_damage and player_target and is_instance_valid(player_target) and is_player_in_boss_arena(player_target):
-			var seg_pt = Geometry2D.get_closest_point_to_segment(player_target.global_position, start_center, _get_body_center() + thrust_direction * 18.0)
-			if seg_pt.distance_to(player_target.global_position) <= THRUST_WIDTH * 0.72:
+			var seg_pt = Geometry2D.get_closest_point_to_segment(player_target.global_position, start_center, _get_body_center() + thrust_direction * 16.0)
+			if seg_pt.distance_to(player_target.global_position) <= THRUST_WIDTH * 0.65:
 				if player_target.has_method("take_damage"):
 					has_dealt_strike_damage = true
-					player_target.take_damage(_scaled_dmg(22), self)
+					player_target.take_damage(_scaled_dmg(20), self)
 	, 0.0, 1.0, lunge_duration)
 	attack_tween.tween_callback(_recover_thrust)
 
@@ -988,8 +989,8 @@ func _recover_thrust() -> void:
 	velocity = Vector2.ZERO
 	animation.scale = base_anim_scale
 	animation.modulate = Color.WHITE
-	# Missing the lunge leaves the boss Exposed (+25% damage taken) during recovery
-	_finish_attack_cycle(0.48 if not is_phase_2 else 0.38, not has_dealt_strike_damage)
+	# Missing the lunge leaves the boss Exposed (+25% damage taken) during a long 1.20s recovery
+	_finish_attack_cycle(1.20 if not is_phase_2 else 1.00, not has_dealt_strike_damage)
 
 # ==============================================================================
 # MOVE 3: Abyssal Earthshaker (Inner Slam + Expanding Shockwave Ring)
@@ -1001,7 +1002,7 @@ func _start_ground_slam() -> void:
 	current_state = State.SLAM_TELEGRAPH
 	velocity = Vector2.ZERO
 	slam_progress = 0.0
-	slam_inner_radius = 70.0 if not is_phase_2 else 78.0
+	slam_inner_radius = 64.0 if not is_phase_2 else 70.0
 	slam_center_world = _get_body_center()
 	
 	if player_target and is_instance_valid(player_target):
@@ -1016,7 +1017,7 @@ func _start_ground_slam() -> void:
 		attack_tween.kill()
 	attack_tween = create_tween()
 	
-	var telegraph_time = 0.62 if not is_phase_2 else 0.52
+	var telegraph_time = 1.30 if not is_phase_2 else 1.10
 	attack_tween.tween_method(func(val: float):
 		slam_progress = val
 		slam_center_world = _get_body_center()
@@ -1030,7 +1031,7 @@ func _execute_ground_slam() -> void:
 	slam_progress = 0.0
 	var impact_center = _get_body_center()
 	
-	_play_attack_release(Vector2.DOWN, 2, 1.7)
+	_play_attack_release(Vector2.DOWN, 2, 1.15)
 	animation.modulate = Color(2.6, 1.6, 1.4)
 	animation.scale = base_anim_scale * Vector2(1.16, 0.86)
 	
@@ -1041,17 +1042,17 @@ func _execute_ground_slam() -> void:
 	if player_target and is_instance_valid(player_target) and is_player_in_boss_arena(player_target):
 		if impact_center.distance_to(player_target.global_position) <= slam_inner_radius:
 			if player_target.has_method("take_damage"):
-				player_target.take_damage(_scaled_dmg(24), null)
+				player_target.take_damage(_scaled_dmg(22), null)
 	
-	# 2. Spawn Expanding Jump-Rope Shockwave Ring from slam rim outward across the arena
+	# 2. Spawn Expanding Jump-Rope Shockwave Ring (slow, readable expansion over 1.05s)
 	active_shockwave_rings.append({
 		"center": impact_center,
 		"start_r": slam_inner_radius * 0.85,
-		"end_r": 168.0 if not is_phase_2 else 190.0,
+		"end_r": 155.0 if not is_phase_2 else 172.0,
 		"current_r": slam_inner_radius * 0.85,
-		"thickness": 18.0,
+		"thickness": 15.0,
 		"elapsed": 0.0,
-		"duration": 0.55 if not is_phase_2 else 0.48,
+		"duration": 1.05 if not is_phase_2 else 0.90,
 		"alpha": 1.0,
 		"has_hit": false
 	})
@@ -1059,12 +1060,12 @@ func _execute_ground_slam() -> void:
 	if attack_tween and attack_tween.is_running():
 		attack_tween.kill()
 	attack_tween = create_tween()
-	attack_tween.tween_property(animation, "scale", base_anim_scale, 0.18)
+	attack_tween.tween_property(animation, "scale", base_anim_scale, 0.22)
 	attack_tween.tween_callback(func():
 		current_state = State.SLAM_RECOVERY
 		animation.modulate = Color.WHITE
-		# Sword is wedged in the stone floor: Exposed punish window for players who dodge inward through the ring!
-		_finish_attack_cycle(0.55 if not is_phase_2 else 0.44, true)
+		# Sword is wedged in the stone floor: long 1.35s Exposed punish window!
+		_finish_attack_cycle(1.35 if not is_phase_2 else 1.15, true)
 	)
 
 # ==============================================================================
@@ -1087,9 +1088,9 @@ func _start_wave_attack() -> void:
 	
 	wave_aim_dirs.clear()
 	if is_phase_2:
-		wave_aim_dirs.append(base_dir.rotated(-0.38))
+		wave_aim_dirs.append(base_dir.rotated(-0.42))
 		wave_aim_dirs.append(base_dir)
-		wave_aim_dirs.append(base_dir.rotated(0.38))
+		wave_aim_dirs.append(base_dir.rotated(0.42))
 	else:
 		wave_aim_dirs.append(base_dir)
 	
@@ -1099,7 +1100,7 @@ func _start_wave_attack() -> void:
 	if attack_tween and attack_tween.is_running():
 		attack_tween.kill()
 	attack_tween = create_tween()
-	var windup = 0.40 if not is_phase_2 else 0.34
+	var windup = 0.95 if not is_phase_2 else 0.82
 	attack_tween.tween_method(func(val: float):
 		wave_telegraph_progress = val
 	, 0.0, 1.0, windup)
@@ -1111,7 +1112,7 @@ func _execute_wave_fire() -> void:
 	current_state = State.WAVE_FIRE
 	wave_telegraph_progress = 0.0
 	animation.modulate = Color.WHITE
-	_play_attack_release(attack_direction, 2, 1.7)
+	_play_attack_release(attack_direction, 2, 1.15)
 	_trigger_screen_shake(2.8, 0.15)
 	
 	var origin = _get_body_center() + attack_direction * 18.0
@@ -1119,8 +1120,8 @@ func _execute_wave_fire() -> void:
 		active_ground_waves.append({
 			"pos": origin,
 			"dir": d.normalized(),
-			"speed": 205.0 if not is_phase_2 else 235.0,
-			"radius": 18.0,
+			"speed": 115.0 if not is_phase_2 else 132.0,
+			"radius": 15.0,
 			"traveled": 0.0,
 			"max_dist": 210.0,
 			"has_hit": false
@@ -1130,10 +1131,10 @@ func _execute_wave_fire() -> void:
 	if attack_tween and attack_tween.is_running():
 		attack_tween.kill()
 	attack_tween = create_tween()
-	attack_tween.tween_interval(0.20)
+	attack_tween.tween_interval(0.28)
 	attack_tween.tween_callback(func():
 		current_state = State.WAVE_RECOVERY
-		_finish_attack_cycle(0.36 if not is_phase_2 else 0.28, false)
+		_finish_attack_cycle(0.95 if not is_phase_2 else 0.80, false)
 	)
 
 # ==============================================================================
@@ -1152,23 +1153,28 @@ func _start_backstep() -> void:
 	
 	# Choose best retreat direction that doesn't back into a wall
 	var retreat_dir = -facing_direction
-	var safe_back = _clamp_distance_to_walls(my_center, retreat_dir, 64.0)
+	var safe_back = _clamp_distance_to_walls(my_center, retreat_dir, 58.0)
 	if safe_back < 28.0:
 		var side_a = retreat_dir.rotated(PI * 0.45)
 		var side_b = retreat_dir.rotated(-PI * 0.45)
-		retreat_dir = side_a if _clamp_distance_to_walls(my_center, side_a, 64.0) > _clamp_distance_to_walls(my_center, side_b, 64.0) else side_b
+		retreat_dir = side_a if _clamp_distance_to_walls(my_center, side_a, 58.0) > _clamp_distance_to_walls(my_center, side_b, 58.0) else side_b
 	
-	velocity = retreat_dir * 235.0
+	velocity = retreat_dir * 165.0
 	thrust_direction = facing_direction
 	_spawn_thrust_dust_particles()
 	
 	if attack_tween and attack_tween.is_running():
 		attack_tween.kill()
 	attack_tween = create_tween()
-	attack_tween.tween_property(animation, "modulate", Color(0.75, 0.9, 1.3, 0.8), 0.10)
-	attack_tween.tween_property(animation, "modulate", Color.WHITE, 0.12)
+	attack_tween.tween_property(animation, "modulate", Color(0.75, 0.9, 1.3, 0.8), 0.14)
+	attack_tween.tween_property(animation, "modulate", Color.WHITE, 0.16)
 	attack_tween.tween_callback(func():
 		velocity = Vector2.ZERO
+		_update_idle_animation()
+	)
+	# Pause in a defensive stance for 0.48s after retreating before initiating a follow-up telegraph
+	attack_tween.tween_interval(0.48)
+	attack_tween.tween_callback(func():
 		if is_dead or current_state == State.STAGGERED:
 			return
 		if randf() < 0.55:
@@ -1210,20 +1216,18 @@ func _trigger_phase_2_transition() -> void:
 		"current_r": 24.0,
 		"thickness": 16.0,
 		"elapsed": 0.0,
-		"duration": 0.42,
+		"duration": 0.65,
 		"alpha": 1.0,
 		"has_hit": true
 	})
 	
 	attack_tween = create_tween()
-	attack_tween.tween_interval(0.70)
+	attack_tween.tween_interval(1.15)
 	attack_tween.tween_callback(func():
 		is_invulnerable = false
 		animation.modulate = Color.WHITE
 		animation.scale = base_anim_scale
-		current_state = State.CHASE
-		can_attack = true
-		_start_ground_slam()
+		_finish_attack_cycle(0.65, false)
 	)
 
 func _finish_attack_cycle(recovery_delay: float, expose_during_recovery: bool = false) -> void:
@@ -1244,8 +1248,8 @@ func _finish_attack_cycle(recovery_delay: float, expose_during_recovery: bool = 
 		if is_dead or current_state == State.STAGGERED:
 			return
 		current_state = State.COOLDOWN
-		var min_cd = 0.55 if is_phase_2 else min_attack_cooldown
-		var max_cd = 0.85 if is_phase_2 else max_attack_cooldown
+		var min_cd = 1.35 if is_phase_2 else min_attack_cooldown
+		var max_cd = 1.85 if is_phase_2 else max_attack_cooldown
 		var cd = randf_range(min_cd, max_cd)
 		get_tree().create_timer(cd).timeout.connect(func():
 			if is_instance_valid(self) and not is_dead:
@@ -1280,8 +1284,11 @@ func _draw_telegraph_visuals(canvas: Node2D) -> void:
 		var base_ang = slash_arc_dir.angle()
 		var half_span = slash_arc_span * 0.5
 		var fill_r = slash_arc_radius * slash_arc_progress
-		_draw_sector(canvas, my_local_center, fill_r, base_ang - half_span, base_ang + half_span, Color(1.0, 0.82, 0.35, 0.16))
-		canvas.draw_arc(my_local_center, slash_arc_radius, base_ang - half_span, base_ang + half_span, 24, Color(1.0, 0.88, 0.45, 0.65), 2.0)
+		var imminent = slash_arc_progress > 0.78
+		var sector_col = Color(1.0, 0.92, 0.45, 0.28) if imminent else Color(1.0, 0.82, 0.35, 0.16)
+		var rim_col = Color(1.0, 0.96, 0.65, 0.95) if imminent else Color(1.0, 0.88, 0.45, 0.65)
+		_draw_sector(canvas, my_local_center, fill_r, base_ang - half_span, base_ang + half_span, sector_col)
+		canvas.draw_arc(my_local_center, slash_arc_radius, base_ang - half_span, base_ang + half_span, 24, rim_col, 2.2)
 	
 	if slash_arc_alpha > 0.02:
 		var base_ang = slash_arc_dir.angle()
@@ -1290,9 +1297,9 @@ func _draw_telegraph_visuals(canvas: Node2D) -> void:
 		canvas.draw_arc(my_local_center, slash_arc_radius, base_ang - half_span, base_ang + half_span, 28, Color(1.0, 0.45, 0.25, slash_arc_alpha * 0.8), 2.5)
 	
 	if current_state == State.SLASH_SPIN_TELEGRAPH and spin_telegraph_progress > 0.01:
-		var r = 68.0
-		canvas.draw_circle(my_local_center, r * spin_telegraph_progress, Color(1.0, 0.55, 0.25, 0.20))
-		canvas.draw_arc(my_local_center, r, 0.0, TAU, 36, Color(1.0, 0.78, 0.35, 0.85), 2.2)
+		var r = 62.0
+		canvas.draw_circle(my_local_center, r * spin_telegraph_progress, Color(1.0, 0.55, 0.25, 0.22))
+		canvas.draw_arc(my_local_center, r, 0.0, TAU, 36, Color(1.0, 0.78, 0.35, 0.88), 2.2)
 	
 	# 2. Straight-Line Impaling Lunge Telegraph (Clamped to Walls)
 	if current_state == State.THRUST_TELEGRAPH:
@@ -1377,7 +1384,7 @@ func _draw_telegraph_visuals(canvas: Node2D) -> void:
 		var hw = f["width"] * 0.45
 		var poly = PackedVector2Array([s_local - norm * hw, s_local + norm * hw, e_local + norm * hw, e_local - norm * hw])
 		if not f["erupted"]:
-			var warn_t = 1.0 - clampf(f["timer"] / 0.45, 0.0, 1.0)
+			var warn_t = 1.0 - clampf(f["timer"] / 0.85, 0.0, 1.0)
 			canvas.draw_colored_polygon(poly, Color(0.95, 0.22, 0.12, 0.18 + 0.25 * warn_t))
 			canvas.draw_line(s_local, e_local, Color(1.0, 0.65, 0.22, 0.55 + 0.4 * warn_t), 2.5)
 		else:
@@ -1693,12 +1700,12 @@ func _apply_hitstun(knockback_dir: Vector2, is_critical: bool) -> void:
 	
 	get_tree().create_timer(0.18).timeout.connect(func():
 		if is_instance_valid(self) and not is_dead and current_state == State.HITSTUN:
-			if consecutive_hits_taken >= 3:
+			if consecutive_hits_taken >= 4:
 				consecutive_hits_taken = 0
 				_start_backstep()
 				return
 			current_state = State.COOLDOWN
-			get_tree().create_timer(0.35 if is_phase_2 else post_hit_cooldown).timeout.connect(func():
+			get_tree().create_timer(0.70 if is_phase_2 else post_hit_cooldown).timeout.connect(func():
 				if is_instance_valid(self) and not is_dead:
 					can_attack = true
 					if current_state == State.COOLDOWN:
