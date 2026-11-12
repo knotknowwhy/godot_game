@@ -17,7 +17,7 @@
 size = Vector2(336, 9.5)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_e1j6l"]
-size = Vector2(152, 11)
+size = Vector2(152, 48)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_west_wall"]
 size = Vector2(16, 560)
@@ -78,10 +78,10 @@ custom_solver_bias = 0.089
 points = PackedVector2Array(-340, -68, -338, -64, -333, -64, -331, -103, -372, -102, -371, -64, -365, -64, -365, -68)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_pl11u"]
-size = Vector2(121, 11)
+size = Vector2(121, 48)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_bhx41"]
-size = Vector2(152, 14)
+size = Vector2(152, 48)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_enemy_div_left"]
 size = Vector2(144, 48)
@@ -99,7 +99,7 @@ size = Vector2(36, 48)
 size = Vector2(284, 48)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_qnb83"]
-size = Vector2(121, 14)
+size = Vector2(121, 48)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_we6vb"]
 size = Vector2(274, 44)
@@ -144,7 +144,7 @@ position = Vector2(-7, -412.25)
 shape = SubResource("RectangleShape2D_north_wall")
 
 [node name="south_wall_left_col" type="CollisionShape2D" parent="world before player render/room_boundaries" unique_id=472893997]
-position = Vector2(-92, 117)
+position = Vector2(-92, 110)
 shape = SubResource("RectangleShape2D_e1j6l")
 
 [node name="west_wall_col" type="CollisionShape2D" parent="world before player render/room_boundaries" unique_id=568350219]
@@ -256,7 +256,7 @@ position = Vector2(744, -154)
 shape = SubResource("ConvexPolygonShape2D_xa3n1")
 
 [node name="south_wall_right_col" type="CollisionShape2D" parent="world before player render/room_boundaries" unique_id=282432070]
-position = Vector2(92.5, 117)
+position = Vector2(92.5, 110)
 shape = SubResource("RectangleShape2D_pl11u")
 
 [node name="enemy_south_wall_blockers" type="StaticBody2D" parent="world before player render" unique_id=192282057]
@@ -264,7 +264,7 @@ collision_layer = 2048
 collision_mask = 0
 
 [node name="enemy_room1_south_left" type="CollisionShape2D" parent="world before player render/enemy_south_wall_blockers" unique_id=1935398378]
-position = Vector2(-92, 117)
+position = Vector2(-92, 110)
 shape = SubResource("RectangleShape2D_bhx41")
 
 [node name="enemy_room2_south_left" type="CollisionShape2D" parent="world before player render/enemy_south_wall_blockers" unique_id=499087031]
@@ -296,7 +296,7 @@ position = Vector2(394, -56)
 shape = SubResource("RectangleShape2D_enemy_south_boss")
 
 [node name="enemy_room1_south_right" type="CollisionShape2D" parent="world before player render/enemy_south_wall_blockers" unique_id=381663985]
-position = Vector2(92.5, 117)
+position = Vector2(92.5, 110)
 shape = SubResource("RectangleShape2D_qnb83")
 
 [node name="enviroment" type="Node" parent="." unique_id=643730466]
