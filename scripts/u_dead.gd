@@ -10,6 +10,9 @@ func _ready() -> void:
 	
 	fade_rect.color = Color(0, 0, 0, 1)
 	fade_rect.visible = true
+	_adapt_camera_zoom()
+	if get_viewport() and not get_viewport().size_changed.is_connected(_adapt_camera_zoom):
+		get_viewport().size_changed.connect(_adapt_camera_zoom)
 	
 	# Smooth fade-in from black when the death scene loads
 	var tween = create_tween()
@@ -19,6 +22,14 @@ func _ready() -> void:
 		if is_instance_valid(fade_rect):
 			fade_rect.visible = false
 	)
+
+func _adapt_camera_zoom() -> void:
+	var cam: Camera2D = get_node_or_null("Camera2D")
+	if not cam:
+		return
+	var vp_size: Vector2 = get_viewport_rect().size
+	var factor: float = clampf(minf(vp_size.x / 1600.0, vp_size.y / 960.0), 0.55, 1.0)
+	cam.zoom = Vector2.ONE * (0.705 * factor)
 
 func _create_fade_overlay() -> ColorRect:
 	var canvas = CanvasLayer.new()

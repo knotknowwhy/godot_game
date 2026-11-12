@@ -18,6 +18,9 @@ const GAME_CAMERA_ZOOM = Vector2(4.98, 4.98)
 const MENU_LOGO_TEX = preload("res://assets/sprites/menu_logo.png")
 const MENU_FONT = preload("res://assets/fonts/PressStart2P-Regular.ttf")
 
+var _logo_rect: TextureRect = null
+var _splash_label: Label = null
+
 func _ready() -> void:
 	if player:
 		player.position = MENU_PLAYER_POS
@@ -27,7 +30,7 @@ func _ready() -> void:
 			player_anim.play("idle_down")
 	
 	if camera:
-		camera.zoom = MENU_CAMERA_ZOOM
+		camera.zoom = _get_effective_menu_zoom()
 		camera.position_smoothing_enabled = true
 		camera.position_smoothing_speed = 6.0
 
@@ -41,7 +44,29 @@ func _ready() -> void:
 		settings_button.pressed.connect(_on_settings_pressed)
 	
 	_setup_minecraft_menu()
+	if get_viewport() and not get_viewport().size_changed.is_connected(_on_viewport_size_changed):
+		get_viewport().size_changed.connect(_on_viewport_size_changed)
 	_play_scene_fade_in()
+
+func _get_zoom_scale() -> float:
+	var vp_size: Vector2 = get_viewport_rect().size
+	if vp_size.x <= 1.0 or vp_size.y <= 1.0:
+		return 1.0
+	return clampf(vp_size.x / 1480.0, 0.62, 1.0)
+
+func _get_effective_menu_zoom() -> Vector2:
+	return MENU_CAMERA_ZOOM * _get_zoom_scale()
+
+func _get_effective_game_zoom() -> Vector2:
+	return GAME_CAMERA_ZOOM * _get_zoom_scale()
+
+func _on_viewport_size_changed() -> void:
+	_layout_menu_ui()
+	if camera and is_instance_valid(camera):
+		if not intro_started:
+			camera.zoom = _get_effective_menu_zoom()
+		elif player and is_instance_valid(player) and player.is_controllable:
+			camera.zoom = _get_effective_game_zoom()
 
 func _setup_minecraft_menu() -> void:
 	if not menu_hud:
@@ -49,50 +74,43 @@ func _setup_minecraft_menu() -> void:
 	var ui_root: Control = menu_hud.get_node_or_null("center")
 	if not ui_root:
 		return
+	ui_root.offset_left = 0.0
+	ui_root.offset_top = 0.0
+	ui_root.offset_right = 0.0
+	ui_root.offset_bottom = 0.0
 	
-	# Big Minecraft-style 3D stone-block TŘEBEŠÍN KNIGHT banner centered at top (6x integer pixel scale)
-	var logo_rect := TextureRect.new()
-	logo_rect.name = "trebesin_logo"
-	logo_rect.texture = MENU_LOGO_TEX
-	logo_rect.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
-	logo_rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-	logo_rect.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-	logo_rect.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	var logo_size := Vector2(756.0, 324.0)
-	logo_rect.position = Vector2(957.0 - logo_size.x * 0.5, 44.0)
-	logo_rect.size = logo_size
-	ui_root.add_child(logo_rect)
+	# Big Minecraft-style 3D stone-block TŘEBEŠÍN KNIGHT banner centered at top
+	_logo_rect = TextureRect.new()
+	_logo_rect.name = "trebesin_logo"
+	_logo_rect.texture = MENU_LOGO_TEX
+	_logo_rect.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+	_logo_rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	_logo_rect.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	_logo_rect.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	ui_root.add_child(_logo_rect)
 	
 	# Classic tilted pulsing yellow Minecraft splash text with Czech diacritics
-	var splash := Label.new()
-	splash.name = "splash_label"
-	splash.text = "Třebešín Edition!"
-	splash.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	splash.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	splash.add_theme_font_override("font", MENU_FONT)
-	splash.add_theme_font_size_override("font_size", 18)
-	splash.add_theme_color_override("font_color", Color(1.0, 1.0, 0.25, 1.0))
-	splash.add_theme_color_override("font_shadow_color", Color(0.18, 0.14, 0.0, 1.0))
-	splash.add_theme_constant_override("shadow_offset_x", 3)
-	splash.add_theme_constant_override("shadow_offset_y", 3)
-	splash.add_theme_color_override("font_outline_color", Color(0.06, 0.05, 0.02, 1.0))
-	splash.add_theme_constant_override("outline_size", 5)
-	splash.size = Vector2(360.0, 32.0)
-	splash.pivot_offset = splash.size * 0.5
-	splash.position = Vector2(957.0 + 170.0, 226.0)
-	splash.rotation = -0.26
-	ui_root.add_child(splash)
+	_splash_label = Label.new()
+	_splash_label.name = "splash_label"
+	_splash_label.text = "Třebešín Edition!"
+	_splash_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_splash_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_splash_label.add_theme_font_override("font", MENU_FONT)
+	_splash_label.add_theme_font_size_override("font_size", 18)
+	_splash_label.add_theme_color_override("font_color", Color(1.0, 1.0, 0.25, 1.0))
+	_splash_label.add_theme_color_override("font_shadow_color", Color(0.18, 0.14, 0.0, 1.0))
+	_splash_label.add_theme_constant_override("shadow_offset_x", 3)
+	_splash_label.add_theme_constant_override("shadow_offset_y", 3)
+	_splash_label.add_theme_color_override("font_outline_color", Color(0.06, 0.05, 0.02, 1.0))
+	_splash_label.add_theme_constant_override("outline_size", 5)
+	_splash_label.size = Vector2(360.0, 32.0)
+	_splash_label.pivot_offset = _splash_label.size * 0.5
+	_splash_label.rotation = -0.26
+	ui_root.add_child(_splash_label)
 	
 	var splash_tw := create_tween().set_loops()
-	splash_tw.tween_property(splash, "scale", Vector2(1.07, 1.07), 0.36).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
-	splash_tw.tween_property(splash, "scale", Vector2(0.96, 0.96), 0.36).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
-	
-	# Style menu buttons like classic Minecraft stone menu bars
-	var vbox: VBoxContainer = ui_root.get_node_or_null("vbox")
-	if vbox:
-		vbox.position = Vector2(957.0 - 170.0, 692.0)
-		vbox.size = Vector2(340.0, 160.0)
-		vbox.add_theme_constant_override("separation", 18)
+	splash_tw.tween_property(_splash_label, "scale", Vector2(1.07, 1.07), 0.36).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+	splash_tw.tween_property(_splash_label, "scale", Vector2(0.96, 0.96), 0.36).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
 	
 	for btn in [start_button, settings_button]:
 		if not btn:
@@ -109,6 +127,41 @@ func _setup_minecraft_menu() -> void:
 		btn.add_theme_stylebox_override("hover", _make_stone_button_style(Color(0.38, 0.40, 0.48, 0.98), Color(0.76, 0.78, 0.84, 1.0)))
 		btn.add_theme_stylebox_override("pressed", _make_stone_button_style(Color(0.22, 0.23, 0.27, 0.98), Color(0.42, 0.44, 0.50, 1.0)))
 		btn.add_theme_stylebox_override("focus", _make_stone_button_style(Color(0.36, 0.38, 0.45, 0.96), Color(0.85, 0.78, 0.42, 1.0)))
+	
+	_layout_menu_ui()
+
+func _layout_menu_ui() -> void:
+	if not menu_hud:
+		return
+	var ui_root: Control = menu_hud.get_node_or_null("center")
+	if not ui_root:
+		return
+	var vp_size: Vector2 = get_viewport_rect().size
+	if vp_size.x <= 1.0 or vp_size.y <= 1.0:
+		vp_size = Vector2(1920.0, 1080.0)
+	
+	var cx: float = vp_size.x * 0.5
+	var logo_w: float = minf(756.0, vp_size.x * 0.84)
+	var logo_h: float = logo_w * (54.0 / 126.0)
+	var logo_y: float = clampf(vp_size.y * 0.042, 24.0, 56.0)
+	if _logo_rect and is_instance_valid(_logo_rect):
+		_logo_rect.size = Vector2(logo_w, logo_h)
+		_logo_rect.position = Vector2(cx - logo_w * 0.5, logo_y)
+	
+	if _splash_label and is_instance_valid(_splash_label):
+		var splash_x: float = minf(cx + logo_w * 0.22, vp_size.x - _splash_label.size.x * 0.88)
+		var splash_y: float = logo_y + logo_h * 0.56
+		_splash_label.position = Vector2(splash_x, splash_y)
+	
+	var vbox: VBoxContainer = ui_root.get_node_or_null("vbox")
+	if vbox:
+		var btn_w: float = minf(340.0, vp_size.x - 48.0)
+		for btn in [start_button, settings_button]:
+			if btn:
+				btn.custom_minimum_size = Vector2(btn_w, 66.0)
+		vbox.size = Vector2(btn_w, 160.0)
+		vbox.position = Vector2(cx - btn_w * 0.5, clampf(vp_size.y * 0.64, 420.0, vp_size.y - 210.0))
+		vbox.add_theme_constant_override("separation", 18)
 
 func _make_stone_button_style(bg: Color, border: Color) -> StyleBoxFlat:
 	var sb := StyleBoxFlat.new()
@@ -181,7 +234,7 @@ func _start_character_walk() -> void:
 	
 	# Smoothly zoom camera back to default gameplay zoom
 	if camera:
-		walk_tween.parallel().tween_property(camera, "zoom", GAME_CAMERA_ZOOM, walk_duration)\
+		walk_tween.parallel().tween_property(camera, "zoom", _get_effective_game_zoom(), walk_duration)\
 			.set_trans(Tween.TRANS_SINE)\
 			.set_ease(Tween.EASE_IN_OUT)
 			

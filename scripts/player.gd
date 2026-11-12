@@ -60,6 +60,8 @@ var dodge_direction: Vector2 = Vector2.DOWN
 var block_start_time: float = 0.0
 var last_attacker: Node2D = null
 @onready var camera: Camera2D = get_node_or_null("Camera2D")
+const TouchControlsScript = preload("res://scripts/touch_controls.gd")
+var touch_controls: Control = null
 
 func _ready() -> void:
 	add_to_group("player")
@@ -67,6 +69,10 @@ func _ready() -> void:
 	health = max_health
 	if health_bar:
 		health_bar.set_health(health, max_health)
+	var hud = get_node_or_null("hud")
+	if hud and not hud.get_node_or_null("touch_controls"):
+		touch_controls = TouchControlsScript.new()
+		hud.add_child(touch_controls)
 	if not is_controllable:
 		set_hud_visible(false)
 
@@ -74,6 +80,8 @@ func set_hud_visible(show: bool) -> void:
 	var hud = get_node_or_null("hud")
 	if hud:
 		hud.visible = show
+	if not show and touch_controls and touch_controls.has_method("release_all_inputs"):
+		touch_controls.release_all_inputs()
 
 func _physics_process(delta: float) -> void:
 	if is_dead:
@@ -494,6 +502,9 @@ func _die() -> void:
 		return
 	is_dead = true
 	is_controllable = false
+	if touch_controls and touch_controls.has_method("release_all_inputs"):
+		touch_controls.release_all_inputs()
+		touch_controls.visible = false
 	invulnerability_timer = 999.0
 	is_invulnerable = true
 	velocity = Vector2.ZERO
@@ -767,12 +778,16 @@ func prepare_for_cutscene() -> void:
 		player_animation.position = Vector2.ZERO
 	var hud_margin = get_node_or_null("hud/margin")
 	var hud_hint = get_node_or_null("hud/controls_hint")
+	if touch_controls and touch_controls.has_method("release_all_inputs"):
+		touch_controls.release_all_inputs()
 	var hud_tween = create_tween()
 	hud_tween.set_parallel(true)
 	if hud_margin:
 		hud_tween.tween_property(hud_margin, "modulate:a", 0.0, 0.4)
 	if hud_hint:
 		hud_tween.tween_property(hud_hint, "modulate:a", 0.0, 0.4)
+	if touch_controls:
+		hud_tween.tween_property(touch_controls, "modulate:a", 0.0, 0.4)
 
 func equip_crown() -> void:
 	if not player_animation or not player_animation.sprite_frames:

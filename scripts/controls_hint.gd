@@ -14,8 +14,21 @@ var is_visible_target: bool = true
 var fade_tween: Tween = null
 
 func _ready() -> void:
+	if DisplayServer.is_touchscreen_available() or OS.has_feature("web_android") or OS.has_feature("web_ios"):
+		visible = false
+		return
 	initial_timer = initial_visible_duration
 	modulate.a = 1.0
+	_update_panel_anchor()
+	if get_viewport() and not get_viewport().size_changed.is_connected(_update_panel_anchor):
+		get_viewport().size_changed.connect(_update_panel_anchor)
+
+func _update_panel_anchor() -> void:
+	if not panel:
+		return
+	var vp_size: Vector2 = get_viewport_rect().size
+	if vp_size.y > 100.0:
+		panel.position = Vector2(24.0, vp_size.y - panel.size.y - 24.0)
 
 func _process(delta: float) -> void:
 	if initial_timer > 0.0:
