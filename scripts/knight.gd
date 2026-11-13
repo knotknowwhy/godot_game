@@ -66,9 +66,9 @@ const FLOATING_TEXT_SCENE = preload("res://scenes/floating_text.tscn")
 @export var boss_room_rect: Rect2 = Rect2(254.0, -246.0, 276.0, 208.0)
 @export var boss_room_trigger: NodePath
 
-@export var max_health: int = 750
+@export var max_health: int = 1000
 @export var damage_per_hit: int = 35
-@export var attack_damage: int = 16
+@export var attack_damage: int = 30
 @export var attack_range: float = 64.0
 @export var strike_reach: float = 72.0
 @export var min_attack_cooldown: float = 1.80

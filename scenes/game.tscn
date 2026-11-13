@@ -318,7 +318,7 @@ position = Vector2(393, -261)
 [node name="world after player render" type="Node" parent="." unique_id=1058235540]
 
 [node name="foreground_room4_boss_wall" type="TileMapLayer" parent="world after player render" unique_id=1615533722]
-tile_map_data = PackedByteArray("AAAPAO3/AAABAAcAAAAQAO3/AAAFAAcAAAARAO3/AAAGAAcAAAASAO3/AAAHAAcAAAATAO3/AAAIAAcAAAAUAO3/AAAFAAcAAAAVAO3/AAAGAAcAAAAWAO3/AAAHAAcAAAAXAO3/AAAIAAcAAAAYAO3/AAAFAAcAAAAZAO3/AAAGAAcAAAAaAO3/AAAHAAcAAAAfAO3/AAAIAAcAAAAgAO3/AAAFAAcAAAAhAO3/AAASAAcAAAAPAO7/AAABAAgAAAAQAO7/AAAFAAgAAAARAO7/AAAGAAgAAAASAO7/AAAHAAgAAAATAO7/AAAIAAgAAAAUAO7/AAAFAAgAAAAVAO7/AAAGAAgAAAAWAO7/AAAHAAgAAAAXAO7/AAAIAAgAAAAYAO7/AAAFAAgAAAAZAO7/AAAGAAgAAAAaAO7/AAAHAAgAAAAfAO7/AAAIAAgAAAAgAO7/AAAFAAgAAAAhAO7/AAASAAgAAAAPAO//AAABAAkAAAAQAO//AAAFAAkAAAARAO//AAAGAAkAAAASAO//AAAHAAkAAAATAO//AAAIAAkAAAAUAO//AAAFAAkAAAAVAO//AAAGAAkAAAAWAO//AAAHAAkAAAAXAO//AAAIAAkAAAAYAO//AAAFAAkAAAAZAO//AAAGAAkAAAAaAO//AAAHAAkAAAAfAO//AAAIAAkAAAAgAO//AAAFAAkAAAAhAO//AAASAAkAAAA=")
+tile_map_data = PackedByteArray("AAAPAO3/AAABAAcAAAAQAO3/AAAFAAcAAAARAO3/AAAGAAcAAAASAO3/AAAHAAcAAAATAO3/AAAIAAcAAAAUAO3/AAAFAAcAAAAVAO3/AAAGAAcAAAAWAO3/AAAHAAcAAAAXAO3/AAAIAAcAAAAYAO3/AAAFAAcAAAAZAO3/AAAGAAcAAAAaAO3/AAAHAAcAAAAfAO3/AAAIAAcAAAAgAO3/AAAFAAcAAAAhAO3/AAASAAcAAAAPAO7/AAABAAgAAAAQAO7/AAAFAAgAAAARAO7/AAAGAAgAAAASAO7/AAAHAAgAAAATAO7/AAAIAAgAAAAUAO7/AAAFAAgAAAAVAO7/AAAGAAgAAAAWAO7/AAAHAAgAAAAXAO7/AAAIAAgAAAAYAO7/AAAFAAgAAAAZAO7/AAAGAAgAAAAaAO7/AAAHAAgAAAAfAO7/AAAdAAQAAAAgAO7/AAAFAAgAAAAhAO7/AAASAAgAAAAPAO//AAABAAkAAAAQAO//AAAFAAkAAAARAO//AAAGAAkAAAASAO//AAAHAAkAAAATAO//AAAIAAkAAAAUAO//AAAFAAkAAAAVAO//AAAGAAkAAAAWAO//AAAHAAkAAAAXAO//AAAIAAkAAAAYAO//AAAFAAkAAAAZAO//AAAGAAkAAAAaAO//AAAHAAkAAAAfAO//AAAdAAMAAAAgAO//AAAFAAkAAAAhAO//AAASAAkAAAAbAO7/AAAZAAQAAAAbAO//AAAZAAMAAAA=")
 tile_set = ExtResource("1_lnu2h")
 
 [node name="room4_boss_fade_trigger" type="Area2D" parent="world after player render" unique_id=2057487531]
@@ -328,7 +328,7 @@ script = ExtResource("3_fade")
 target_wall_path = NodePath("../foreground_room4_boss_wall")
 
 [node name="trigger_shape" type="CollisionShape2D" parent="world after player render/room4_boss_fade_trigger" unique_id=382418933]
-position = Vector2(392, -280)
+position = Vector2(356, -277)
 shape = SubResource("RectangleShape2D_we6vb")
 
 [node name="throne" type="TextureRect" parent="world after player render" unique_id=398180779]
@@ -473,19 +473,19 @@ color = Color(0.02, 0.02, 0.04, 1)
 
 [node name="mist_boss_room" type="ColorRect" parent="darkness_mists" unique_id=941026033]
 material = SubResource("ShaderMaterial_mist")
-offset_left = 239.0
-offset_top = -267.0
-offset_right = 543.0
-offset_bottom = -24.0
+offset_left = 242.0
+offset_top = -270.0
+offset_right = 546.0
+offset_bottom = -27.0
 mouse_filter = 2
 color = Color(0.02, 0.02, 0.04, 1)
 
 [node name="mist_room4_boss_wall" type="ColorRect" parent="darkness_mists" unique_id=171306081]
 material = SubResource("ShaderMaterial_mist")
-offset_left = 239.0
-offset_top = -304.0
-offset_right = 543.0
-offset_bottom = -256.0
+offset_left = 237.0
+offset_top = -299.0
+offset_right = 541.0
+offset_bottom = -251.0
 mouse_filter = 2
 color = Color(0.02, 0.02, 0.04, 1)
 
@@ -509,10 +509,10 @@ color = Color(0.02, 0.02, 0.04, 1)
 
 [node name="mist_room4" type="ColorRect" parent="darkness_mists" unique_id=132501156]
 material = SubResource("ShaderMaterial_mist")
-offset_left = 241.0
-offset_top = -496.0
-offset_right = 538.0
-offset_bottom = -294.0
+offset_left = 244.0
+offset_top = -493.0
+offset_right = 541.0
+offset_bottom = -291.0
 mouse_filter = 2
 color = Color(0.02, 0.02, 0.04, 1)
 
