@@ -71,8 +71,8 @@ const FLOATING_TEXT_SCENE = preload("res://scenes/floating_text.tscn")
 @export var attack_damage: int = 30
 @export var attack_range: float = 64.0
 @export var strike_reach: float = 72.0
-@export var min_attack_cooldown: float = 1.80
-@export var max_attack_cooldown: float = 2.40
+@export var min_attack_cooldown: float = 1.5
+@export var max_attack_cooldown: float = 2.0
 @export var post_hit_cooldown: float = 0.90
 
 var facing_direction: Vector2 = Vector2.DOWN
